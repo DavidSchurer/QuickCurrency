@@ -52,24 +52,24 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   }
 
   Future<void> fetchExchangeRates() async {
-    const String apiKey = 'e93a69020e0c3e3ab120f0d99dc321ae';
-    final String url = 'http://data.fixer.io/api/latest?access_key=$apiKey';
+    const String apiKey = 'fca_live_4ebUZf4qVO7CFlBOe5SMsekef3Xfk6OIRGniqUpE';
+    final String url = 'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey';
 
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['success']) {
+        if (data != null && data['data'] != null) {
           setState(() {
-            exchangeRates['CAD'] = data['rates']['CAD'];
-            exchangeRates['MXN'] = data['rates']['MXN'];
-            exchangeRates['EUR'] = data['rates']['EUR'];
-            exchangeRates['GBP'] = data['rates']['GBP'];
-            exchangeRates['JPY'] = data['rates']['JPY'];
-            exchangeRates['AUD'] = data['rates']['AUD'];
+            exchangeRates['CAD'] = data['data']['CAD'];
+            exchangeRates['MXN'] = data['data']['MXN'];
+            exchangeRates['EUR'] = data['data']['EUR'];
+            exchangeRates['GBP'] = data['data']['GBP'];
+            exchangeRates['JPY'] = data['data']['JPY'];
+            exchangeRates['AUD'] = data['data']['AUD'];
           });
         } else {
-          print('Error fetching exchange rates: ${data['error']['info']}');
+          print('Error fetching exchange rates: Invalid data received');
         }
       } else {
         print('Failed to fetch exchange rates. Status code: ${response.statusCode}');
@@ -82,7 +82,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   void _updateUsdAmount() {
     String text = usdController.text;
     text = _sanitizeInput(text);
-    
+
     if (text.isEmpty) {
       setState(() {
         usdAmount = 0.0;
@@ -172,11 +172,11 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                 children: exchangeRates.keys.map((currencyCode) {
                   return Container(
                     decoration: BoxDecoration(
-                      color: Colors.lightBlue[100],
+                      color: Colors.blueGrey[100],
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
+                          color: Colors.white.withOpacity(0.5),
                           spreadRadius: 3,
                           blurRadius: 7,
                           offset: const Offset(0, 3),

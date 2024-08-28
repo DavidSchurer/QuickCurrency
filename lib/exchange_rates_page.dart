@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:fl_chart/fl_chart.dart';
 
 class ExchangeRatesPage extends StatefulWidget {
   const ExchangeRatesPage({super.key});
@@ -11,84 +10,43 @@ class ExchangeRatesPage extends StatefulWidget {
 }
 
 class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
-  final Map<String, List<FlSpot>> historicalRates = {};
   final Map<String, double> currentRates = {};
   final List<String> currencies = ['GBP', 'JPY', 'AUD', 'CAD', 'MXN', 'EUR'];
+  final Map<String, String> currencySymbols = {
+    'GBP': '£',
+    'JPY': '¥',
+    'AUD': 'A\$',
+    'CAD': 'C\$',
+    'MXN': 'MX\$',
+    'EUR': '€',
+  };
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     fetchCurrentRates();
-    fetchHistoricalRates();
   }
 
   Future<void> fetchCurrentRates() async {
-    const String apiKey = 'e93a69020e0c3e3ab120f0d99dc321ae';
-    final String url = 'http://data.fixer.io/api/latest?access_key=$apiKey';
+    const String apiKey = 'fca_live_4ebUZf4qVO7CFlBOe5SMsekef3Xfk6OIRGniqUpE';
+    final String url =
+        'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey&base_currency=USD';
 
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['success']) {
-          setState(() {
-            for (var currency in currencies) {
-              currentRates[currency] = data['rates'][currency];
-            }
-          });
-        } else {
-          print('Error fetching current rates: ${data['error']['info']}');
-        }
+        final rates = data['data'];
+
+        setState(() {
+          for (var currency in currencies) {
+            currentRates[currency] = rates[currency];
+          }
+        });
       } else {
         print(
             'Failed to fetch current rates. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-  Future<void> fetchHistoricalRates() async {
-    const String apiKey = 'e93a69020e0c3e3ab120f0d99dc321ae';
-    final DateTime now = DateTime.now();
-    final List<FlSpot> emptyList =
-        List.generate(30, (index) => FlSpot(index.toDouble(), 0.0));
-
-    // Initialize historicalRates with empty lists
-    for (var currency in currencies) {
-      historicalRates[currency] = List.from(emptyList);
-    }
-
-    try {
-      // Fetch data for each day for the last 30 days
-      for (int i = 0; i < 30; i++) {
-        final date = DateTime.now()
-            .subtract(Duration(days: i))
-            .toIso8601String()
-            .split('T')[0];
-        final String url = 'http://data.fixer.io/api/$date?access_key=$apiKey';
-
-        final response = await http.get(Uri.parse(url));
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          if (data['success']) {
-            for (var currency in currencies) {
-              if (data['rates'].containsKey(currency)) {
-                final index = 29 - i; // To display recent data at the end
-                setState(() {
-                  historicalRates[currency]![index] =
-                      FlSpot(i.toDouble(), data['rates'][currency]);
-                });
-              }
-            }
-          } else {
-            print('Error fetching historical rates: ${data['error']['info']}');
-          }
-        } else {
-          print(
-              'Failed to fetch historical rates. Status code: ${response.statusCode}');
-        }
       }
     } catch (e) {
       print('Error: $e');
@@ -105,21 +63,24 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
       appBar: AppBar(
         title: const Text('Exchange Rates'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: isLoading
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 600),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
+                  childAspectRatio: 1.8,
                 ),
                 itemCount: currencies.length,
                 itemBuilder: (context, index) {
                   final currency = currencies[index];
-                  final data = historicalRates[currency]!;
                   final currentRate = currentRates[currency] ?? 0.0;
+                  final symbol = currencySymbols[currency] ?? '';
 
                   return Container(
                     padding: const EdgeInsets.all(16.0),
@@ -135,71 +96,47 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
                         ),
                       ],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          '1 USD = ${currentRate.toStringAsFixed(2)} $currency',
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: const BoxDecoration(
+                            color: Colors.black,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            symbol,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(width: 10),
                         Expanded(
-                          child: LineChart(
-                            LineChartData(
-                              gridData: FlGridData(show: true),
-                              titlesData: FlTitlesData(
-                                leftTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    reservedSize: 40,
-                                    getTitlesWidget: (value, meta) {
-                                      return Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 8.0),
-                                        child: Text(
-                                          value.toString(),
-                                          style: const TextStyle(fontSize: 14),
-                                        ),
-                                      );
-                                    },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '1 USD = ${currentRate.toStringAsFixed(2)} $currency',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                   ),
-                                ),
-                                bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    reservedSize: 40,
-                                    getTitlesWidget: (value, meta) {
-                                      return Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: Text(
-                                          value.toString(),
-                                          style: const TextStyle(fontSize: 14),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                              borderData: FlBorderData(show: true),
-                              lineBarsData: [
-                                LineChartBarData(
-                                  spots: data,
-                                  isCurved: true,
-                                  color: Colors.blueAccent,
-                                  dotData: FlDotData(show: false),
-                                  belowBarData: BarAreaData(show: false),
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+        ),
       ),
     );
   }
