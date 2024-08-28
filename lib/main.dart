@@ -3,8 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'exchange_rates_page.dart'; // Import the new page
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
   runApp(const MyApp());
 }
 
@@ -54,7 +57,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   }
 
   Future<void> fetchExchangeRates() async {
-    const String apiKey = 'fca_live_4ebUZf4qVO7CFlBOe5SMsekef3Xfk6OIRGniqUpE';
+    String apiKey = dotenv.env['API_KEY'] ?? '';
     final String url =
         'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey';
 
