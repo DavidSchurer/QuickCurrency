@@ -17,7 +17,8 @@ class MyApp extends StatelessWidget {
       home: const CurrencyConverterHomePage(),
       onGenerateRoute: (settings) {
         if (settings.name == '/ExchangeRates') {
-          return MaterialPageRoute(builder: (context) => const ExchangeRatesPage());
+          return MaterialPageRoute(
+              builder: (context) => const ExchangeRatesPage());
         }
         return null;
       },
@@ -29,7 +30,8 @@ class CurrencyConverterHomePage extends StatefulWidget {
   const CurrencyConverterHomePage({super.key});
 
   @override
-  _CurrencyConverterHomePageState createState() => _CurrencyConverterHomePageState();
+  _CurrencyConverterHomePageState createState() =>
+      _CurrencyConverterHomePageState();
 }
 
 class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
@@ -53,7 +55,8 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
 
   Future<void> fetchExchangeRates() async {
     const String apiKey = 'fca_live_4ebUZf4qVO7CFlBOe5SMsekef3Xfk6OIRGniqUpE';
-    final String url = 'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey';
+    final String url =
+        'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -72,7 +75,8 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
           print('Error fetching exchange rates: Invalid data received');
         }
       } else {
-        print('Failed to fetch exchange rates. Status code: ${response.statusCode}');
+        print(
+            'Failed to fetch exchange rates. Status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
@@ -130,18 +134,31 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: Colors.grey[200],
+        toolbarHeight: 100,
+        backgroundColor: Colors.white,
         centerTitle: true,
-        title: const Text(
-          "U-Currency Converter",
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
-          ),
+        title: const Column(
+          children: [
+            Text(
+              "QuickCurrency",
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              "Quick and Easy Exchange Rates",
+              style: TextStyle(
+                fontSize: 16,
+                fontStyle: FontStyle.italic,
+                color: Colors.black,
+              ),
+            ),
+          ],
         ),
       ),
       body: Padding(
@@ -151,7 +168,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
           children: [
             const Text(
               "Enter USD Amount",
-              style: TextStyle(fontSize: 18, color: Colors.blue),
+              style: TextStyle(fontSize: 18, color: Colors.black),
             ),
             const SizedBox(height: 10),
             TextField(
@@ -172,11 +189,11 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                 children: exchangeRates.keys.map((currencyCode) {
                   return Container(
                     decoration: BoxDecoration(
-                      color: Colors.blueGrey[100],
+                      color: const Color(0xFF344D77),
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.black.withOpacity(0.2),
                           spreadRadius: 3,
                           blurRadius: 7,
                           offset: const Offset(0, 3),
@@ -191,7 +208,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                           height: 40,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.blueAccent,
+                            color: Colors.black,
                           ),
                           child: const Icon(
                             Icons.flag,
@@ -204,7 +221,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                           currencyCode,
                           style: const TextStyle(
                             fontSize: 16,
-                            color: Colors.blueAccent,
+                            color: Colors.black,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -213,7 +230,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                             "$currencyCode: ${_formatNumber(convertedAmounts[currencyCode]!)}",
                             style: const TextStyle(
                               fontSize: 14,
-                              color: Colors.blueAccent,
+                              color: Colors.black,
                             ),
                           ),
                       ],
@@ -231,7 +248,11 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
             onPressed: () {
               Navigator.pushNamed(context, '/ExchangeRates');
             },
-            child: const Text('Current Exchange Rates'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+            ),
+            child: const Text('Current Exchange Rates',
+                style: TextStyle(color: Colors.white)),
           ),
         ),
       ),

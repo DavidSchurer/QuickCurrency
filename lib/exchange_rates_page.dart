@@ -85,11 +85,11 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
                   return Container(
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: Colors.blueGrey[100],
+                      color: const Color(0xFF344D77),
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
+                          color: Colors.black.withOpacity(0.2),
                           spreadRadius: 3,
                           blurRadius: 7,
                           offset: const Offset(0, 3),
