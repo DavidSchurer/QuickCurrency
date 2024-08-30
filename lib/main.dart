@@ -6,7 +6,7 @@ import 'exchange_rates_page.dart'; // Import the new page
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  await dotenv.load(fileName: '.env');
+  await dotenv.load();
   runApp(const MyApp());
 }
 
