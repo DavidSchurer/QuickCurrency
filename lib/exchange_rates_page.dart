@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'config.dart';
 
 class ExchangeRatesPage extends StatefulWidget {
   const ExchangeRatesPage({super.key});
@@ -30,8 +30,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   }
 
   Future<void> fetchCurrentRates() async {
-    String apiKey = dotenv.env['API_KEY'] ?? '';
-    final String url =
+    const String url =
         'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey&base_currency=USD';
 
     try {
