@@ -242,9 +242,9 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
         toolbarHeight: 100,
         backgroundColor: Colors.white,
         centerTitle: true,
-        title: Column(
+        title: const Column(
           children: [
-            const Text(
+            Text(
               "QuickCurrency",
               style: TextStyle(
                 fontSize: 28,
@@ -252,8 +252,8 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 4),
-            const Text(
+            SizedBox(height: 4),
+            Text(
               "Quick and Easy Exchange Rates",
               style: TextStyle(
                 fontSize: 16,
@@ -276,7 +276,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
             const SizedBox(height: 10),
             TextField(
               controller: usdController,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 labelText: selectedCurrency,
@@ -329,7 +329,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                         ),
                         const SizedBox(height: 10),
                           Text(
-                            '${convertedAmounts[currencyCode]?.toStringAsFixed(2) ?? '0.00'}',
+                            convertedAmounts[currencyCode]?.toStringAsFixed(2) ?? '0.00',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black,
