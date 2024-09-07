@@ -36,16 +36,22 @@ class CurrencyConverterHomePage extends StatefulWidget {
 }
 
 class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
+
+  String _selectedCurrencyText = "Enter USD Amount";
+  String _hintText = "Enter amount in USD";
+
   final usdController = TextEditingController();
-  double usdAmount = 0.0;
+  double inputAmount = 0.0;
+  String selectedCurrency = "USD";
   final Map<String, double> exchangeRates = {};
   Map<String, double> convertedAmounts = {};
 
   @override
   void initState() {
     super.initState();
-    usdController.addListener(_updateUsdAmount);
+    usdController.addListener(_updateInputAmount);
     fetchExchangeRates();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showCurrencyPopup());
   }
 
   @override
@@ -64,6 +70,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
         final data = json.decode(response.body);
         if (data != null && data['data'] != null) {
           setState(() {
+            exchangeRates['USD'] = 1.0;
             exchangeRates['CAD'] = data['data']['CAD'];
             exchangeRates['MXN'] = data['data']['MXN'];
             exchangeRates['EUR'] = data['data']['EUR'];
@@ -83,20 +90,20 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
     }
   }
 
-  void _updateUsdAmount() {
+  void _updateInputAmount() {
     String text = usdController.text;
     text = _sanitizeInput(text);
 
     if (text.isEmpty) {
       setState(() {
-        usdAmount = 0.0;
+        inputAmount = 0.0;
         convertedAmounts.clear();
       });
       return;
     }
 
-    usdAmount = double.tryParse(text) ?? 0.0;
-    String formattedText = '\$${_formatNumber(usdAmount)}';
+    inputAmount = double.tryParse(text) ?? 0.0;
+    String formattedText = '\$${_formatNumber(inputAmount)}';
 
     setState(() {
       usdController.value = usdController.value.copyWith(
@@ -120,15 +127,111 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   }
 
   void _convertAllCurrencies() {
+    double amountInUsd = (selectedCurrency == 'USD')
+    ? inputAmount
+    : inputAmount / exchangeRates[selectedCurrency]!;
+
     setState(() {
       convertedAmounts = exchangeRates.map((currencyCode, rate) {
-        return MapEntry(currencyCode, usdAmount * rate);
+        return MapEntry(currencyCode, amountInUsd * rate);
       });
     });
   }
 
   String _formatNumber(double number) {
     return NumberFormat.decimalPattern().format(number);
+  }
+
+  void _showCurrencyPopup() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container (
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: const Color(0xFF344D77),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            height: 400,
+            child: Column(
+              children: [
+                const Text(
+                  "QuickCurrency",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const Text(
+                  "Quick and Easy Exchange Rates",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.white,
+                  ),
+                ),
+                const Spacer(),
+                ElevatedButton(
+                  onPressed: () {
+                    _chooseCurrencyPopup();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  ),
+                  child: const Text(
+                    "Choose Currency to Convert",
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _chooseCurrencyPopup() {
+    Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Select Currency"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: exchangeRates.keys.map((currency) {
+              return ListTile(
+                title: Text(currency),
+                onTap: () {
+                  setState(() {
+                    selectedCurrency = currency;
+                    _updateSelectedCurrencyText();
+                    usdController.text = '';
+                    inputAmount = 0.0;
+                    convertedAmounts.clear();
+                  });
+                  Navigator.of(context).pop();
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  void _updateSelectedCurrencyText() {
+    setState(() {
+      _selectedCurrencyText = "Enter $selectedCurrency Amount";
+      _hintText = "Enter amount in $selectedCurrency";
+    });
   }
 
   @override
@@ -139,9 +242,9 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
         toolbarHeight: 100,
         backgroundColor: Colors.white,
         centerTitle: true,
-        title: const Column(
+        title: Column(
           children: [
-            Text(
+            const Text(
               "QuickCurrency",
               style: TextStyle(
                 fontSize: 28,
@@ -149,8 +252,8 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                 color: Colors.black,
               ),
             ),
-            SizedBox(height: 4),
-            Text(
+            const SizedBox(height: 4),
+            const Text(
               "Quick and Easy Exchange Rates",
               style: TextStyle(
                 fontSize: 16,
@@ -166,18 +269,18 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Enter USD Amount",
-              style: TextStyle(fontSize: 18, color: Colors.black),
+             Text(
+              _selectedCurrencyText,
+              style: const TextStyle(fontSize: 18, color: Colors.black),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: usdController,
               keyboardType: TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: "USD",
-                hintText: "Enter amount in USD",
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: selectedCurrency,
+                hintText: _hintText,
               ),
             ),
             const SizedBox(height: 20),
@@ -225,9 +328,8 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        if (convertedAmounts.containsKey(currencyCode))
                           Text(
-                            "$currencyCode: ${_formatNumber(convertedAmounts[currencyCode]!)}",
+                            '${convertedAmounts[currencyCode]?.toStringAsFixed(2) ?? '0.00'}',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black,
