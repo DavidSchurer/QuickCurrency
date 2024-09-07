@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ExchangeRatesPage extends StatefulWidget {
-  const ExchangeRatesPage({super.key});
+  final String selectedCurrency;
+  
+  const ExchangeRatesPage({required this.selectedCurrency});
 
   @override
   _ExchangeRatesPageState createState() => _ExchangeRatesPageState();
@@ -12,7 +15,7 @@ class ExchangeRatesPage extends StatefulWidget {
 
 class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   final Map<String, double> currentRates = {};
-  final List<String> currencies = ['GBP', 'JPY', 'AUD', 'CAD', 'MXN', 'EUR'];
+  final List<String> currencies = ['GBP', 'JPY', 'AUD', 'CAD', 'MXN', 'EUR', 'USD'];
   final Map<String, String> currencySymbols = {
     'GBP': '£',
     'JPY': '¥',
@@ -20,6 +23,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
     'CAD': 'C\$',
     'MXN': 'MX\$',
     'EUR': '€',
+    'USD': '\$',
   };
   bool isLoading = true;
 
@@ -30,8 +34,8 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   }
 
   Future<void> fetchCurrentRates() async {
-    const String url =
-        'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey&base_currency=USD';
+    final String url =
+        'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey&base_currency=${widget.selectedCurrency}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -41,7 +45,9 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
 
         setState(() {
           for (var currency in currencies) {
-            currentRates[currency] = rates[currency];
+            if (currency != widget.selectedCurrency) {
+              currentRates[currency] = rates[currency];
+            }
           }
         });
       } else {
@@ -61,7 +67,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Exchange Rates'),
+        title: Text('Exchange Rates (${widget.selectedCurrency})'),
       ),
       body: Center(
         child: Container(
@@ -76,9 +82,10 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
                   mainAxisSpacing: 10,
                   childAspectRatio: 1.8,
                 ),
-                itemCount: currencies.length,
+                itemCount: currencies.length - 1,
                 itemBuilder: (context, index) {
                   final currency = currencies[index];
+                  if (currency == widget.selectedCurrency) return Container(); 
                   final currentRate = currentRates[currency] ?? 0.0;
                   final symbol = currencySymbols[currency] ?? '';
 
@@ -122,7 +129,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                '1 USD = ${currentRate.toStringAsFixed(2)} $currency',
+                                '1 ${widget.selectedCurrency} = ${currentRate.toStringAsFixed(2)} $currency',
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,

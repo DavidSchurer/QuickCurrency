@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'exchange_rates_page.dart'; // Import the new page
 import 'config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -18,8 +19,9 @@ class MyApp extends StatelessWidget {
       home: const CurrencyConverterHomePage(),
       onGenerateRoute: (settings) {
         if (settings.name == '/ExchangeRates') {
+          final args = settings.arguments as String;
           return MaterialPageRoute(
-              builder: (context) => const ExchangeRatesPage());
+              builder: (context) => ExchangeRatesPage(selectedCurrency: args));
         }
         return null;
       },
@@ -36,7 +38,6 @@ class CurrencyConverterHomePage extends StatefulWidget {
 }
 
 class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
-
   String _selectedCurrencyText = "Enter USD Amount";
   String _hintText = "Enter amount in USD";
 
@@ -58,6 +59,23 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   void dispose() {
     usdController.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveSelectedCurrency() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('selectedCurrency', selectedCurrency);
+  }
+
+  Future<void> _loadSelectedCurrency() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? storedCurrency = prefs.getString('selectedCurrency');
+
+    if (storedCurrency != null) {
+      setState(() {
+        selectedCurrency = storedCurrency;
+        _updateSelectedCurrencyText();
+      });
+    }
   }
 
   Future<void> fetchExchangeRates() async {
@@ -128,8 +146,8 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
 
   void _convertAllCurrencies() {
     double amountInUsd = (selectedCurrency == 'USD')
-    ? inputAmount
-    : inputAmount / exchangeRates[selectedCurrency]!;
+        ? inputAmount
+        : inputAmount / exchangeRates[selectedCurrency]!;
 
     setState(() {
       convertedAmounts = exchangeRates.map((currencyCode, rate) {
@@ -149,7 +167,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
       builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          child: Container (
+          child: Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
               color: const Color(0xFF344D77),
@@ -181,7 +199,8 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                   ),
                   child: const Text(
                     "Choose Currency to Convert",
@@ -209,7 +228,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
             children: exchangeRates.keys.map((currency) {
               return ListTile(
                 title: Text(currency),
-                onTap: () {
+                onTap: () async {
                   setState(() {
                     selectedCurrency = currency;
                     _updateSelectedCurrencyText();
@@ -217,6 +236,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                     inputAmount = 0.0;
                     convertedAmounts.clear();
                   });
+                  await _saveSelectedCurrency();
                   Navigator.of(context).pop();
                 },
               );
@@ -232,6 +252,14 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
       _selectedCurrencyText = "Enter $selectedCurrency Amount";
       _hintText = "Enter amount in $selectedCurrency";
     });
+  }
+
+  void _navigateToExchangeRatesPage() {
+    Navigator.pushNamed(
+      context,
+      '/ExchangeRates',
+      arguments: selectedCurrency,
+    );
   }
 
   @override
@@ -269,14 +297,15 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             Text(
+            Text(
               _selectedCurrencyText,
               style: const TextStyle(fontSize: 18, color: Colors.black),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: usdController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 labelText: selectedCurrency,
@@ -289,7 +318,11 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                 crossAxisCount: 3,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
-                children: exchangeRates.keys.map((currencyCode) {
+                children: exchangeRates.keys
+                    .where((currencyCode) =>
+                        currencyCode !=
+                        selectedCurrency) 
+                    .map((currencyCode) {
                   return Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFF344D77),
@@ -328,13 +361,14 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                          Text(
-                            convertedAmounts[currencyCode]?.toStringAsFixed(2) ?? '0.00',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black,
-                            ),
+                        Text(
+                          convertedAmounts[currencyCode]?.toStringAsFixed(2) ??
+                              '0.00',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
                           ),
+                        ),
                       ],
                     ),
                   );
@@ -348,7 +382,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
         child: Center(
           child: ElevatedButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/ExchangeRates');
+              _navigateToExchangeRatesPage();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
