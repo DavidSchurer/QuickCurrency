@@ -15,16 +15,17 @@ class ExchangeRatesPage extends StatefulWidget {
 
 class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   final Map<String, double> currentRates = {};
-  final List<String> currencies = ['GBP', 'JPY', 'AUD', 'CAD', 'MXN', 'EUR', 'USD'];
+  final List<String> currencies = ['USD','GBP', 'JPY', 'AUD', 'CAD', 'MXN', 'EUR'];
   final Map<String, String> currencySymbols = {
+    'USD': '\$',
     'GBP': '£',
     'JPY': '¥',
     'AUD': 'A\$',
     'CAD': 'C\$',
     'MXN': 'MX\$',
     'EUR': '€',
-    'USD': '\$',
   };
+
   bool isLoading = true;
 
   @override
@@ -45,9 +46,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
 
         setState(() {
           for (var currency in currencies) {
-            if (currency != widget.selectedCurrency) {
               currentRates[currency] = rates[currency];
-            }
           }
         });
       } else {
@@ -80,13 +79,12 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  childAspectRatio: 1.8,
+                  childAspectRatio: 2 / 1,
                 ),
                 itemCount: currencies.length - 1,
                 itemBuilder: (context, index) {
-                  final currency = currencies[index];
-                  if (currency == widget.selectedCurrency) return Container(); 
-                  final currentRate = currentRates[currency] ?? 0.0;
+                  final currency = currencies.where((c) => c != widget.selectedCurrency).toList()[index];
+                  final currentRate = (currentRates[currency] ?? 0.0);
                   final symbol = currencySymbols[currency] ?? '';
 
                   return Container(
