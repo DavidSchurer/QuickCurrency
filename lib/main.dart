@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'exchange_rates_page.dart'; // Import the new page
+import 'currency_conversion_history_page.dart';
 import 'config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,12 +17,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Currency Converter',
       home: const CurrencyConverterHomePage(),
       onGenerateRoute: (settings) {
         if (settings.name == '/ExchangeRates') {
           final args = settings.arguments as String;
           return MaterialPageRoute(
               builder: (context) => ExchangeRatesPage(selectedCurrency: args));
+        } else if (settings.name == '/CurrencyConversionHistory') {
+          return MaterialPageRoute(builder: (context) => CurrencyConversionHistoryPage());
         }
         return null;
       },
@@ -97,6 +101,17 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
         _selectedCurrencyConversion = savedConversion;
       });
     }
+  }
+
+  Future<void> _saveConversionHistory() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> history = prefs.getStringList('conversionHistory') ?? [];
+
+    String timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    String entry = '$selectedCurrency|$inputAmount|$_selectedCurrencyCode|${_selectedCurrencyConversion?.toStringAsFixed(2)}|$timestamp';
+
+    history.add(entry);
+    await prefs.setStringList('conversionHistory', history);
   }
 
   Future<void> fetchExchangeRates() async {
@@ -349,7 +364,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                       setState(() {
                         _selectedCurrencyCode = currencyCode;
                         _selectedCurrencyConversion =
-                            convertedAmounts[currencyCode];
+                            convertedAmounts[currencyCode] ?? 0.0;
                       });
 
                       SharedPreferences prefs =
@@ -358,6 +373,8 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                       prefs.setDouble('inputAmount', inputAmount);
                       prefs.setDouble(
                           'conversionRate', _selectedCurrencyConversion ?? 0.0);
+                      
+                      await _saveConversionHistory();
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -423,17 +440,30 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        child: Center(
-          child: ElevatedButton(
-            onPressed: () {
-              _navigateToExchangeRatesPage();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                _navigateToExchangeRatesPage();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+              ),
+              child: const Text('Current Exchange Rates',
+                  style: TextStyle(color: Colors.white)),
             ),
-            child: const Text('Current Exchange Rates',
-                style: TextStyle(color: Colors.white)),
-          ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/CurrencyConversionHistory');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+              ),
+              child: const Text('View Currency Conversion History',
+                  style: TextStyle(color: Colors.white)),
+            )
+          ],
         ),
       ),
     );
