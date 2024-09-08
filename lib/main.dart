@@ -47,6 +47,9 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   final Map<String, double> exchangeRates = {};
   Map<String, double> convertedAmounts = {};
 
+  String? _selectedCurrencyCode;
+  double? _selectedCurrencyConversion;
+
   @override
   void initState() {
     super.initState();
@@ -74,6 +77,24 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
       setState(() {
         selectedCurrency = storedCurrency;
         _updateSelectedCurrencyText();
+      });
+    }
+  }
+
+  Future<void> _loadSavedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedCurrency = prefs.getString('selectedCurrency');
+    double? savedAmount = prefs.getDouble('inputAmount');
+    double? savedConversion = prefs.getDouble('conversionRate');
+
+    if (savedCurrency != null) {
+      setState(() {
+        selectedCurrency = savedCurrency;
+        _updateSelectedCurrencyText();
+        inputAmount = savedAmount ?? 0.0;
+        _convertAllCurrencies();
+        _selectedCurrencyCode = savedCurrency;
+        _selectedCurrencyConversion = savedConversion;
       });
     }
   }
@@ -319,57 +340,80 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
                 children: exchangeRates.keys
-                    .where((currencyCode) =>
-                        currencyCode !=
-                        selectedCurrency) 
+                    .where((currencyCode) => currencyCode != selectedCurrency)
                     .map((currencyCode) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF344D77),
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          spreadRadius: 3,
-                          blurRadius: 7,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.black,
+                  bool isSelected = currencyCode == _selectedCurrencyCode;
+
+                  return GestureDetector(
+                    onTap: () async {
+                      setState(() {
+                        _selectedCurrencyCode = currencyCode;
+                        _selectedCurrencyConversion =
+                            convertedAmounts[currencyCode];
+                      });
+
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      prefs.setString('selectedCurrency', selectedCurrency);
+                      prefs.setDouble('inputAmount', inputAmount);
+                      prefs.setDouble(
+                          'conversionRate', _selectedCurrencyConversion ?? 0.0);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            isSelected ? const Color(0xFF344D77) : const Color(0xFF344D77),
+                        borderRadius: BorderRadius.circular(10),
+                        border: isSelected
+                            ? Border.all(color: Colors.black, width: 3)
+                            : null,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 3,
+                            blurRadius: 7,
+                            offset: const Offset(0, 3),
                           ),
-                          child: const Icon(
-                            Icons.flag,
-                            size: 24,
-                            color: Colors.white,
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black,
+                            ),
+                            child: const Icon(
+                              Icons.flag,
+                              size: 24,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          currencyCode,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black,
+                          const SizedBox(height: 10),
+                          Text(
+                            currencyCode,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          convertedAmounts[currencyCode]?.toStringAsFixed(2) ??
-                              '0.00',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
+                          if (isSelected &&
+                              _selectedCurrencyConversion != null) ...[
+                            const SizedBox(height: 10),
+                            Text(
+                              _selectedCurrencyConversion?.toStringAsFixed(2) ??
+                                  '0.00',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   );
                 }).toList(),
