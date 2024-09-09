@@ -2,12 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'exchange_rates_page.dart'; // Import the new page
+import 'exchange_rates_page.dart'; 
 import 'currency_conversion_history_page.dart';
+import 'welcome_page.dart';
 import 'config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'register_page.dart';
+import 'login_page.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -18,7 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Currency Converter',
-      home: const CurrencyConverterHomePage(),
+      home: const WelcomePage(),
       onGenerateRoute: (settings) {
         if (settings.name == '/ExchangeRates') {
           final args = settings.arguments as String;
@@ -26,6 +35,8 @@ class MyApp extends StatelessWidget {
               builder: (context) => ExchangeRatesPage(selectedCurrency: args));
         } else if (settings.name == '/CurrencyConversionHistory') {
           return MaterialPageRoute(builder: (context) => CurrencyConversionHistoryPage());
+        } else if (settings.name == '/CurrencyConverterHomePage') {
+          return MaterialPageRoute(builder: (context) => const CurrencyConverterHomePage());
         }
         return null;
       },
