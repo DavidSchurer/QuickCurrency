@@ -8,6 +8,8 @@ import 'welcome_page.dart';
 import 'config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'register_page.dart';
 import 'login_page.dart';
@@ -55,6 +57,7 @@ class CurrencyConverterHomePage extends StatefulWidget {
 class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   String _selectedCurrencyText = "Enter USD Amount";
   String _hintText = "Enter amount in USD";
+  String? loggedInUserEmail;
 
   final usdController = TextEditingController();
   double inputAmount = 0.0;
@@ -71,12 +74,27 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
     usdController.addListener(_updateInputAmount);
     fetchExchangeRates();
     WidgetsBinding.instance.addPostFrameCallback((_) => _showCurrencyPopup());
+    _getCurrentUser();
   }
 
   @override
   void dispose() {
     usdController.dispose();
     super.dispose();
+  }
+
+  Future<void> _getCurrentUser() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        loggedInUserEmail = user.email;
+      });
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
   }
 
   Future<void> _saveSelectedCurrency() async {
@@ -114,6 +132,18 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
     }
   }
 
+  Future<void> _saveConversionHistoryToFirestore(Conversion conversion) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await FirebaseFirestore.instance
+        .collection('conversions')
+        .doc(userId)
+        .set({
+          'history': FieldValue.arrayUnion([conversion.toMap()]),
+        }, SetOptions(merge: true));
+    }
+  }
+
   Future<void> _saveConversionHistory() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> history = prefs.getStringList('conversionHistory') ?? [];
@@ -123,6 +153,16 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
 
     history.add(entry);
     await prefs.setStringList('conversionHistory', history);
+
+    Conversion conversion = Conversion(
+      date: timestamp,
+      fromCurrency: selectedCurrency,
+      toCurrency: _selectedCurrencyCode!,
+      amount: inputAmount,
+      conversionRate: _selectedCurrencyConversion!,
+    );
+
+    await _saveConversionHistoryToFirestore(conversion);
   }
 
   Future<void> fetchExchangeRates() async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main.dart';
 import 'register_page.dart';
 
@@ -17,9 +18,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login() async {
     try {
-      await _auth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim());
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const CurrencyConverterHomePage()),

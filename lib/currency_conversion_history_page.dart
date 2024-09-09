@@ -1,6 +1,13 @@
+// TO-DO: Track Logged In User Through Firebase Auth on this page
+
+// TO-DO: Fix Currency Conversion History Not Appearing
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CurrencyConversionHistoryPage extends StatefulWidget {
   @override
@@ -10,58 +17,84 @@ class CurrencyConversionHistoryPage extends StatefulWidget {
 
 class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistoryPage> {
   List<List<String>> _history = [];
+  List<Conversion> _conversions = [];
 
   @override
   void initState() {
     super.initState();
-    _loadHistory();
+    FirebaseFirestore.instance.collection('conversions').addListener(_loadHistory);
   }
 
   Future<void> _loadHistory() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> history = prefs.getStringList('conversionHistory') ?? [];
-
-    setState(() {
-      _history = history.map((entry) => entry.split('|')).toList();
-    });
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      final conversions = await FirebaseFirestore.instance
+        .collection('conversions')
+        .doc(userId)
+        .get();
+      final history = conversions.data()?['history'] as List<Map<String, dynamic>>? ?? [];
+      setState(() {
+        _conversions = history.map((conversion) => Conversion.fromMap(conversion)).toList();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Currency Conversion History'),
+        title: Text('Currency Conversion History'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: DataTable(
-            border: TableBorder.all(
-                color: const Color(0xF344D77),
-                width: 2,
-              ),
-              columns: const [
-                DataColumn(label: Text('Selected Currency')),
-                DataColumn(label: Text('Amount')),
-                DataColumn(label: Text('Converted Currency')),
-                DataColumn(label: Text('Converted Amount')),
-                DataColumn(label: Text('Timestamp')),
-              ],
-              rows: _history.map((entry) {
-                return DataRow(
-                  cells: [
-                    DataCell(Text(entry[0])),
-                    DataCell(Text(entry[1])),
-                    DataCell(Text(entry[2])),
-                    DataCell(Text(entry[3])),
-                    DataCell(Text(entry[4])),
-                  ],
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-      );
+      body: ListView.builder(
+        itemCount: _conversions.length,
+        itemBuilder: (context, index) {
+          final conversion = _conversions[index];
+          return ListTile(
+            title: Text('${conversion.fromCurrency} to ${conversion.toCurrency}'),
+            subtitle: Text('${conversion.amount} ${conversion.fromCurrency} = ${conversion.toCurrency} ${conversion.conversionRate}'),
+            trailing: Text(DateFormat('yyyy-MM-dd HH:mm:ss').format(conversion.date as DateTime)),
+          );
+        },
+      )
+    );
+  }
+}
+
+extension on CollectionReference<Map<String, dynamic>> {
+  void addListener(Future<void> Function() loadHistory) {}
+}
+
+class Conversion {
+  final String? date;
+  final String? fromCurrency;
+  final String? toCurrency;
+  final double? amount;
+  final double? conversionRate;
+
+  Conversion({
+    required this.date,
+    required this.fromCurrency,
+    required this.toCurrency,
+    required this.amount,
+    required this.conversionRate,
+  });
+
+  factory Conversion.fromMap(Map<String, dynamic> map) {
+    return Conversion(
+      date: map['date'] as String,
+      fromCurrency: map['fromCurrency'] as String,
+      toCurrency: map['toCurrency'] as String,
+      amount: map['amount'] as double,
+      conversionRate: map['conversionRate'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'date': date,
+      'fromCurrency': fromCurrency,
+      'toCurrency': toCurrency,
+      'amount': amount,
+    };
   }
 }
