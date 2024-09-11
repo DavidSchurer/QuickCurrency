@@ -1,5 +1,3 @@
-// TO-DO: Track Logged In User Through Firebase Auth on this page
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';

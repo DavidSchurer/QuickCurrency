@@ -12,6 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'register_page.dart';
+import 'exchange_rates_history.dart';
 import 'login_page.dart';
 
 void main() async {
@@ -39,6 +40,8 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(builder: (context) => CurrencyConversionHistoryPage());
         } else if (settings.name == '/CurrencyConverterHomePage') {
           return MaterialPageRoute(builder: (context) => const CurrencyConverterHomePage());
+        } else if (settings.name == '/ExchangeRatesHistory') {
+          return MaterialPageRoute(builder: (context) => ExchangeRateHistoryPage());
         }
         return null;
       },
@@ -133,14 +136,18 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   }
 
   Future<void> _saveConversionHistoryToFirestore(Conversion conversion) async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId != null) {
-      await FirebaseFirestore.instance
-        .collection('conversions')
-        .doc(userId)
-        .set({
-          'history': FieldValue.arrayUnion([conversion.toMap()]),
-        }, SetOptions(merge: true));
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userEmail = user.email;
+      await FirebaseFirestore.instance.collection('conversions').add({
+        'selectedCurrency': selectedCurrency,
+        'userEmail': userEmail,
+        'fromCurrency': conversion.fromCurrency,
+        'toCurrency': conversion.toCurrency,
+        'amount': conversion.amount,
+        'conversionRate': conversion.conversionRate,
+        'date': conversion.date,
+      });
     }
   }
 
@@ -414,16 +421,13 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                     onTap: () async {
                       setState(() {
                         _selectedCurrencyCode = currencyCode;
-                        _selectedCurrencyConversion =
-                            convertedAmounts[currencyCode] ?? 0.0;
+                        _selectedCurrencyConversion = convertedAmounts[currencyCode] ?? 0.0;
                       });
 
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
                       prefs.setString('selectedCurrency', selectedCurrency);
                       prefs.setDouble('inputAmount', inputAmount);
-                      prefs.setDouble(
-                          'conversionRate', _selectedCurrencyConversion ?? 0.0);
+                      prefs.setDouble('conversionRate', _selectedCurrencyConversion ?? 0.0);
                       
                       await _saveConversionHistory();
                     },
@@ -513,7 +517,17 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
               ),
               child: const Text('View Currency Conversion History',
                   style: TextStyle(color: Colors.white)),
-            )
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/ExchangeRatesHistory');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+              ),
+              child: const Text('View Exchange Rate Graph',
+                  style: TextStyle(color: Colors.white)),
+            ),
           ],
         ),
       ),

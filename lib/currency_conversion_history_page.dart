@@ -1,7 +1,3 @@
-// TO-DO: Track Logged In User Through Firebase Auth on this page
-
-// TO-DO: Fix Currency Conversion History Not Appearing
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
