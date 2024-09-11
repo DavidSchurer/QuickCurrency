@@ -5,11 +5,13 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ExchangeRatesPage extends StatefulWidget {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final String selectedCurrency;
   
-  const ExchangeRatesPage({required this.selectedCurrency});
+  ExchangeRatesPage({required this.selectedCurrency});
 
   @override
   _ExchangeRatesPageState createState() => _ExchangeRatesPageState();
@@ -33,7 +35,17 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   @override
   void initState() {
     super.initState();
+    _getUser();
     fetchCurrentRates();
+  }
+
+  void _getUser() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      print('Logged in as: ${user.email}');
+    } else {
+      print('Not logged in');
+    }
   }
 
   Future<void> fetchCurrentRates() async {

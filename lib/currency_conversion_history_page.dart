@@ -10,19 +10,34 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CurrencyConversionHistoryPage extends StatefulWidget {
+
   @override
   _CurrencyConversionHistoryPageState createState() =>
     _CurrencyConversionHistoryPageState();
 }
 
 class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistoryPage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   List<List<String>> _history = [];
   List<Conversion> _conversions = [];
 
   @override
   void initState() {
     super.initState();
+    _getUser();
     FirebaseFirestore.instance.collection('conversions').addListener(_loadHistory);
+  }
+
+  void _getUser() async {
+    final User? user = _auth.currentUser;
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null) {
+        print('Logged in as: ${user.email}');
+      } else {
+        print('Not logged in');
+      }
+    });
   }
 
   Future<void> _loadHistory() async {
