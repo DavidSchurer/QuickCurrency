@@ -17,18 +17,33 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
 
  @override
  Widget build(BuildContext context) {
+  final user = _auth.currentUser;
+
+  if (user == null) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Currency Conversion History'),
+      ),
+      body: Center(
+        child: Text('User not logged in'),
+      ),
+    );
+  }
   return Scaffold(
     appBar: AppBar(
       title: Text('Currency Conversion History'),
     ),
     body: StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('conversions').snapshots(),
+      stream: FirebaseFirestore.instance
+      .collection('conversions')
+      .where('userEmail', isEqualTo: user.email)
+      .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text('No conversions found.'));
+          return Center(child: Text('No conversions found for ${user.email}.'));
         }
 
         final conversions = snapshot.data!.docs.map((doc) {
