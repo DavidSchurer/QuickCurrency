@@ -47,29 +47,51 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
     appBar: AppBar(
       title: Text('Currency Conversion History'),
     ),
-    body: StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-      .collection('conversions')
-      .where('userEmail', isEqualTo: user.email)
-      .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text('No conversions found for ${user.email}.'));
-        }
+    body: Center(
+      child: Container(
+        margin: EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Color(0xFF344D77),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+        .collection('conversions')
+        .where('userEmail', isEqualTo: user.email)
+        .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Text('No conversions found for ${user.email}.',
+              style: TextStyle(color: Colors.white)));
+          }
 
-        final conversions = snapshot.data!.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          return Conversion.fromMap(data);
-        }).toList();
+          final conversions = snapshot.data!.docs.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return Conversion.fromMap(data);
+          }).toList();
 
         return SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
+              headingRowHeight: 56.0,
+              headingTextStyle: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+              dataTextStyle: TextStyle(
+                color: Colors.black,
+              ),
+              border: TableBorder.all(
+                color: Colors.black,
+                width: 1,
+              ),
               columns: const <DataColumn>[
                 DataColumn(label: Text('Selected Currency')),
                 DataColumn(label: Text('Selected Amount')),
@@ -88,10 +110,12 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
                     DataCell(Text(conversion.date ?? '')),
                   ]);
                 }).toList(),
-              ),
-            ),
-          );
-        },
+                 ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
