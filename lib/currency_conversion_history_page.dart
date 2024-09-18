@@ -15,64 +15,55 @@ class CurrencyConversionHistoryPage extends StatefulWidget {
 class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistoryPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  List<List<String>> _history = [];
-  List<Conversion> _conversions = [];
+ @override
+ Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Currency Conversion History'),
+    ),
+    body: StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('conversions').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(child: Text('No conversions found.'));
+        }
 
-  @override
-  void initState() {
-    super.initState();
-    _getUser();
-    FirebaseFirestore.instance.collection('conversions').addListener(_loadHistory);
-  }
+        final conversions = snapshot.data!.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return Conversion.fromMap(data);
+        }).toList();
 
-  void _getUser() async {
-    final User? user = _auth.currentUser;
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user != null) {
-        print('Logged in as: ${user.email}');
-      } else {
-        print('Not logged in');
-      }
-    });
-  }
-
-  Future<void> _loadHistory() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId != null) {
-      final conversions = await FirebaseFirestore.instance
-        .collection('conversions')
-        .doc(userId)
-        .get();
-      final history = conversions.data()?['history'] as List<Map<String, dynamic>>? ?? [];
-      setState(() {
-        _conversions = history.map((conversion) => Conversion.fromMap(conversion)).toList();
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Currency Conversion History'),
-      ),
-      body: ListView.builder(
-        itemCount: _conversions.length,
-        itemBuilder: (context, index) {
-          final conversion = _conversions[index];
-          return ListTile(
-            title: Text('${conversion.fromCurrency} to ${conversion.toCurrency}'),
-            subtitle: Text('${conversion.amount} ${conversion.fromCurrency} = ${conversion.toCurrency} ${conversion.conversionRate}'),
-            trailing: Text(DateFormat('yyyy-MM-dd HH:mm:ss').format(conversion.date as DateTime)),
+        return SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const <DataColumn>[
+                DataColumn(label: Text('Date')),
+                DataColumn(label: Text('From Currency')),
+                DataColumn(label: Text('To Currency')),
+                DataColumn(label: Text('Amount')),
+                DataColumn(label: Text('Conversion Rate')),
+              ],
+              rows: conversions.map((conversion) {
+                  return DataRow(cells: <DataCell>[
+                    DataCell(Text(conversion.date ?? '')),
+                    DataCell(Text(conversion.fromCurrency ?? '')),
+                    DataCell(Text(conversion.toCurrency ?? '')),
+                    DataCell(Text(conversion.amount.toString())),
+                    DataCell(Text(conversion.conversionRate.toString())),
+                  ]);
+                }).toList(),
+              ),
+            ),
           );
         },
-      )
+      ),
     );
   }
-}
-
-extension on CollectionReference<Map<String, dynamic>> {
-  void addListener(Future<void> Function() loadHistory) {}
 }
 
 class Conversion {
@@ -92,11 +83,11 @@ class Conversion {
 
   factory Conversion.fromMap(Map<String, dynamic> map) {
     return Conversion(
-      date: map['date'] as String,
-      fromCurrency: map['fromCurrency'] as String,
-      toCurrency: map['toCurrency'] as String,
-      amount: map['amount'] as double,
-      conversionRate: map['conversionRate'],
+      date: map['date'] != null ? map['date'] as String : '',
+      fromCurrency: map['fromCurrency'] != null ? map['fromCurrency'] as String : '',
+      toCurrency: map['toCurrency'] != null ? map['toCurrency'] as String : '',
+      amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
+      conversionRate: (map['conversionRate'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -106,6 +97,7 @@ class Conversion {
       'fromCurrency': fromCurrency,
       'toCurrency': toCurrency,
       'amount': amount,
+      'conversionRate': conversionRate,
     };
   }
 }
