@@ -65,15 +65,15 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
-                      labelStyle: TextStyle(color: Colors.white), // White label text
+                      labelStyle: TextStyle(color: Colors.white), 
                       filled: true,
-                      fillColor: Colors.white24, // Light background for input field
+                      fillColor: Colors.white24, 
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: const BorderSide(color: Colors.white),
                       ),
                     ),
-                    style: const TextStyle(color: Colors.white), // White text for the input
+                    style: const TextStyle(color: Colors.white), 
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -81,21 +81,21 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      labelStyle: TextStyle(color: Colors.white), // White label text
+                      labelStyle: TextStyle(color: Colors.white), 
                       filled: true,
-                      fillColor: Colors.white24, // Light background for input field
+                      fillColor: Colors.white24, 
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: const BorderSide(color: Colors.white),
                       ),
                     ),
-                    style: const TextStyle(color: Colors.white), // White text for the input
+                    style: const TextStyle(color: Colors.white), 
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Color(0xFF344D77), backgroundColor: Colors.white, // Text color inside the button
+                      foregroundColor: Color(0xFF344D77), backgroundColor: Colors.white, 
                       padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -112,13 +112,13 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     child: const Text(
                       "Don't have an account? Register here.",
-                      style: TextStyle(color: Colors.white), // White text for the link
+                      style: TextStyle(color: Colors.white), 
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 100), // Add space below the box
+            const SizedBox(height: 100), 
           ],
         ),
       ),

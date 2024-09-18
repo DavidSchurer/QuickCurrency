@@ -13,7 +13,7 @@ class WelcomePage extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            const SizedBox(height: 100), // Add space above the box
+            const SizedBox(height: 100), 
             Container(
               width: 600,
               padding: const EdgeInsets.all(16.0),
@@ -41,7 +41,7 @@ class WelcomePage extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 16), // Reduced spacing before the button
+                  const SizedBox(height: 16), 
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -54,7 +54,7 @@ class WelcomePage extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 100), // Add space below the box
+            const SizedBox(height: 100), 
           ],
         ),
       ),
