@@ -15,6 +15,20 @@ class CurrencyConversionHistoryPage extends StatefulWidget {
 class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistoryPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  final Map<String, String> currencySymbols = {
+    'USD': '\$',
+    'GBP': '£',
+    'JPY': '¥',
+    'AUD': 'A\$',
+    'CAD': 'C\$',
+    'MXN': 'MX\$',
+    'EUR': '€',
+  };
+
+  String getCurrencySymbol(String currencyCode) {
+    return currencySymbols[currencyCode] ?? '';
+  }
+
  @override
  Widget build(BuildContext context) {
   final user = _auth.currentUser;
@@ -57,19 +71,21 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
             scrollDirection: Axis.horizontal,
             child: DataTable(
               columns: const <DataColumn>[
+                DataColumn(label: Text('Selected Currency')),
+                DataColumn(label: Text('Selected Amount')),
+                DataColumn(label: Text('Converted Currency')),
+                DataColumn(label: Text('Converted Amount')),
                 DataColumn(label: Text('Date')),
-                DataColumn(label: Text('From Currency')),
-                DataColumn(label: Text('To Currency')),
-                DataColumn(label: Text('Amount')),
-                DataColumn(label: Text('Conversion Rate')),
               ],
-              rows: conversions.map((conversion) {
+                rows: conversions.map((conversion) {
                   return DataRow(cells: <DataCell>[
-                    DataCell(Text(conversion.date ?? '')),
                     DataCell(Text(conversion.fromCurrency ?? '')),
+                    DataCell(Text(
+                        '${getCurrencySymbol(conversion.fromCurrency ?? '')}${conversion.amount.toString()}')),
                     DataCell(Text(conversion.toCurrency ?? '')),
-                    DataCell(Text(conversion.amount.toString())),
-                    DataCell(Text(conversion.conversionRate.toString())),
+                    DataCell(Text(
+                        '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate.toString()}')),
+                    DataCell(Text(conversion.date ?? '')),
                   ]);
                 }).toList(),
               ),
