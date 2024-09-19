@@ -6,7 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import 'line_graph.dart';
+import 'scatter_plot.dart';
 import 'config.dart';
 import 'models.dart';
 
@@ -106,7 +106,7 @@ class _ExchangeRateHistoryPageState extends State<ExchangeRateHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Exchange Rate History')),
-      body: LineGraph(dataMap: _dataMap),
+      body: ScatterPlotGraph(dataMap: _dataMap),
     );
   }
 }
