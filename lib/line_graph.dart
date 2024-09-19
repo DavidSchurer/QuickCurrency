@@ -6,7 +6,7 @@ import 'models.dart';
 class LineGraph extends StatelessWidget {
   final Map<String, List<ExchangeRateData>> dataMap;
 
-  LineGraph({required this.dataMap});
+  const LineGraph({super.key, required this.dataMap});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class LineGraph extends StatelessWidget {
         children: [
           Text(
             '1 USD = ${currentRate.toStringAsFixed(2)} $currency',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           Container(
             margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -34,7 +34,7 @@ class LineGraph extends StatelessWidget {
     }).toList();
 
     return ListView(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       children: graphs,
     );
   }
@@ -56,7 +56,7 @@ class LineGraphPainter extends CustomPainter {
         ..strokeWidth = 1;
 
       canvas.drawLine(Offset(0, size.height), Offset(size.width, size.height), axisPaint);
-      canvas.drawLine(Offset(0, 0), Offset(0, size.height), axisPaint);
+      canvas.drawLine(const Offset(0, 0), Offset(0, size.height), axisPaint);
 
       if (data.isEmpty) {
         return;

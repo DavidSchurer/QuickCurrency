@@ -11,7 +11,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
-import 'register_page.dart';
 import 'exchange_rates_history.dart';
 import 'login_page.dart';
 
@@ -67,6 +66,16 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   String selectedCurrency = "USD";
   final Map<String, double> exchangeRates = {};
   Map<String, double> convertedAmounts = {};
+
+  final Map<String, String> currencySymbols = {
+    'USD': '\$',
+    'GBP': '£',
+    'JPY': '¥',
+    'AUD': 'A\$',
+    'CAD': 'C\$',
+    'MXN': 'MX\$',
+    'EUR': '€',
+  };
 
   String? _selectedCurrencyCode;
   double? _selectedCurrencyConversion;
@@ -452,23 +461,22 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            width: 40,
-                            height: 40,
-                            decoration: const BoxDecoration(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.black,
-                            ),
-                            child: const Icon(
-                              Icons.flag,
-                              size: 24,
-                              color: Colors.white,
+                              image: DecorationImage(
+                                image: AssetImage('assets/$currencyCode.png'),
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 10),
                           Text(
                             currencyCode,
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                               color: Colors.black,
                             ),
                           ),
@@ -476,10 +484,9 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                               _selectedCurrencyConversion != null) ...[
                             const SizedBox(height: 10),
                             Text(
-                              _selectedCurrencyConversion?.toStringAsFixed(2) ??
-                                  '0.00',
+                              '${currencySymbols[currencyCode]} ${_selectedCurrencyConversion?.toStringAsFixed(2) ?? '0.00'}',
                               style: const TextStyle(
-                                fontSize: 14,
+                                fontSize: 18,
                                 color: Colors.black,
                               ),
                             ),

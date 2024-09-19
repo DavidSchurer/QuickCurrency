@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CurrencyConversionHistoryPage extends StatefulWidget {
+  const CurrencyConversionHistoryPage({super.key});
+
 
   @override
   _CurrencyConversionHistoryPageState createState() =>
@@ -36,23 +38,23 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
   if (user == null) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Currency Conversion History'),
+        title: const Text('Currency Conversion History'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('User not logged in'),
       ),
     );
   }
   return Scaffold(
     appBar: AppBar(
-      title: Text('Currency Conversion History'),
+      title: const Text('Currency Conversion History'),
     ),
     body: Center(
       child: Container(
-        margin: EdgeInsets.all(16),
-        padding: EdgeInsets.all(16),
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Color(0xFF344D77),
+          color: const Color(0xFF344D77),
           borderRadius: BorderRadius.circular(16),
         ),
         child: StreamBuilder<QuerySnapshot>(
@@ -62,12 +64,12 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
         .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Text('No conversions found for ${user.email}.',
-              style: TextStyle(color: Colors.white)));
+              style: const TextStyle(color: Colors.white)));
           }
 
           final conversions = snapshot.data!.docs.map((doc) {
@@ -81,11 +83,11 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
             scrollDirection: Axis.horizontal,
             child: DataTable(
               headingRowHeight: 56.0,
-              headingTextStyle: TextStyle(
+              headingTextStyle: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
-              dataTextStyle: TextStyle(
+              dataTextStyle: const TextStyle(
                 color: Colors.black,
               ),
               border: TableBorder.all(

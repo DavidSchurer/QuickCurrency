@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
-                      labelStyle: TextStyle(color: Colors.white), 
+                      labelStyle: const TextStyle(color: Colors.white), 
                       filled: true,
                       fillColor: Colors.white24, 
                       border: OutlineInputBorder(
@@ -81,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      labelStyle: TextStyle(color: Colors.white), 
+                      labelStyle: const TextStyle(color: Colors.white), 
                       filled: true,
                       fillColor: Colors.white24, 
                       border: OutlineInputBorder(
@@ -95,8 +95,8 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Color(0xFF344D77), backgroundColor: Colors.white, 
-                      padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      foregroundColor: const Color(0xFF344D77), backgroundColor: Colors.white, 
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

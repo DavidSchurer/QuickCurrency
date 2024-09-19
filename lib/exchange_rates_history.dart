@@ -15,6 +15,8 @@ void initializeFirebase() async {
 }
 
 class ExchangeRateHistoryPage extends StatefulWidget {
+  const ExchangeRateHistoryPage({super.key});
+
   @override
   _ExchangeRateHistoryPageState createState() =>
       _ExchangeRateHistoryPageState();
@@ -72,7 +74,7 @@ class _ExchangeRateHistoryPageState extends State<ExchangeRateHistoryPage> {
       final snapshot = await FirebaseFirestore.instance.collection('exchange_rates').get();
       final Map<String, List<ExchangeRateData>> historicalDataMap = {};
 
-      snapshot.docs.forEach((doc) {
+      for (var doc in snapshot.docs) {
         final data = doc.data();
         final currency = data['currency'];
         final rate = data['rate'];
@@ -82,7 +84,7 @@ class _ExchangeRateHistoryPageState extends State<ExchangeRateHistoryPage> {
           historicalDataMap[currency] = [];
         }
         historicalDataMap[currency]!.add(ExchangeRateData(currency, rate, date));
-      });
+      }
 
       setState(() {
         _dataMap.clear();
@@ -103,7 +105,7 @@ class _ExchangeRateHistoryPageState extends State<ExchangeRateHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Exchange Rate History')),
+      appBar: AppBar(title: const Text('Exchange Rate History')),
       body: LineGraph(dataMap: _dataMap),
     );
   }

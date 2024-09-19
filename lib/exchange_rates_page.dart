@@ -9,7 +9,7 @@ class ExchangeRatesPage extends StatefulWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final String selectedCurrency;
   
-  ExchangeRatesPage({required this.selectedCurrency});
+  ExchangeRatesPage({super.key, required this.selectedCurrency});
 
   @override
   _ExchangeRatesPageState createState() => _ExchangeRatesPageState();
