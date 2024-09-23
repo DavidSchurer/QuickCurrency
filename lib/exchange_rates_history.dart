@@ -141,7 +141,7 @@ class ScatterPlotPainter extends CustomPainter {
       TextSpan rateSpan = TextSpan(style: textStyle, text: rateData.rate.toStringAsFixed(2));
       TextPainter rateTp = TextPainter(text: rateSpan, textDirection: ui.TextDirection.ltr);
       rateTp.layout();
-      rateTp.paint(canvas, Offset(45, y - rateTp.height / 2));
+      rateTp.paint(canvas, Offset(80 + 10, y - rateTp.height / 2));
     }
 
     // Draw the date labels (slightly outside the x-axis range)
@@ -165,7 +165,7 @@ class ScatterPlotPainter extends CustomPainter {
       TextSpan span = TextSpan(style: textStyle, text: rateLabels[i].toStringAsFixed(2));
       TextPainter tp = TextPainter(text: span, textDirection: ui.TextDirection.ltr);
       tp.layout();
-      tp.paint(canvas, Offset(10, y + 20));
+      tp.paint(canvas, Offset(80 + 10, y + 20));
     }
   }
 
