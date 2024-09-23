@@ -77,7 +77,9 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 147, 143, 143),
       appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 147, 143, 143),
         title: Text('Exchange Rates (${widget.selectedCurrency})'),
       ),
       body: Center(

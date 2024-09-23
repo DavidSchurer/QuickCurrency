@@ -7,7 +7,7 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color.fromARGB(255, 147, 143, 143),
       body: Center(
         child: Column(
           children: [
@@ -27,7 +27,7 @@ class WelcomePage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -36,11 +36,14 @@ class WelcomePage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontStyle: FontStyle.italic,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 16), 
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, backgroundColor: Colors.black,
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,

@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color.fromARGB(255, 147, 143, 143),
       body: Center(
         child: Column(
           children: [
@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -65,15 +65,15 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
-                      labelStyle: const TextStyle(color: Colors.white), 
+                      labelStyle: const TextStyle(color: Colors.black), 
                       filled: true,
                       fillColor: Colors.white24, 
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.white),
+                        borderSide: const BorderSide(color: Colors.black),
                       ),
                     ),
-                    style: const TextStyle(color: Colors.white), 
+                    style: const TextStyle(color: Colors.black), 
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -81,21 +81,21 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      labelStyle: const TextStyle(color: Colors.white), 
+                      labelStyle: const TextStyle(color: Colors.black), 
                       filled: true,
                       fillColor: Colors.white24, 
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.white),
+                        borderSide: const BorderSide(color: Colors.black),
                       ),
                     ),
-                    style: const TextStyle(color: Colors.white), 
+                    style: const TextStyle(color: Colors.black), 
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: const Color(0xFF344D77), backgroundColor: Colors.white, 
+                      foregroundColor: const Color.fromARGB(255, 255, 255, 255), backgroundColor: const Color.fromARGB(255, 0, 0, 0), 
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -112,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     child: const Text(
                       "Don't have an account? Register here.",
-                      style: TextStyle(color: Colors.white), 
+                      style: TextStyle(color: Colors.black), 
                     ),
                   ),
                 ],

@@ -46,7 +46,9 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
     );
   }
   return Scaffold(
+    backgroundColor: Color.fromARGB(255, 147, 143, 143),
     appBar: AppBar(
+      backgroundColor: Color.fromARGB(255, 147, 143, 143),
       title: const Text('Currency Conversion History'),
     ),
     body: Center(

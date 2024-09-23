@@ -54,7 +54,9 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 147, 143, 143),
       appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 147, 143, 143),
         title: Text('Exchange Rate History'),
       ),
       body: Padding(
