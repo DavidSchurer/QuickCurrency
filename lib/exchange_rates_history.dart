@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:math';
 
 class ExchangeRatesHistoryPage extends StatefulWidget {
   @override
@@ -55,14 +57,21 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
       appBar: AppBar(
         title: Text('Exchange Rate History'),
       ),
-      body: ListView(
-        children: _dataMap.entries.map((entry) {
-          final currency = entry.key;
-          final data = entry.value;
+      body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 20,
+                mainAxisSpacing: 30,
+                childAspectRatio: 1.0,
+              ),
+              itemCount: _dataMap.length,
+              itemBuilder: (context, index) {
+                final currency = _dataMap.keys.elementAt(index);
+                final data = _dataMap[currency]!;
 
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
+            return  Column(
               children: [
                 Text(
                   '1 USD = ${data.last.rate.toStringAsFixed(2)} $currency',
@@ -70,15 +79,15 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
                       fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 SizedBox(
-                  height: 200,
+                  height: 300,
                   child: CustomPaint(
                     painter: ScatterPlotPainter(data),
-                  ),
+                   ),
                 ),
               ],
-            ),
-          );
-        }).toList(),
+            );
+          },
+        ),
       ),
     );
   }
@@ -99,6 +108,8 @@ class ScatterPlotPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    const double scaleFactor = 1.5;
+
     final paint = Paint()
       ..color = Colors.blue
       ..strokeWidth = 5
@@ -113,9 +124,12 @@ class ScatterPlotPainter extends CustomPainter {
       fontSize: 12,
     );
 
+    final double scaledWidth = size.width * scaleFactor;
+    final double scaledHeight = size.height * scaleFactor;
+
     // Draw X and Y axes, extended slightly past both ends
-    canvas.drawLine(Offset(-80, size.height - 40), Offset(size.width + 80, size.height - 40), axisPaint);
-    canvas.drawLine(const Offset(80, 0), Offset(80, size.height - 40), axisPaint);
+    canvas.drawLine(Offset(-80 * scaleFactor, scaledHeight - 40 * scaleFactor), Offset(scaledWidth + 80 * scaleFactor, scaledHeight - 40 * scaleFactor), axisPaint);
+    canvas.drawLine(const Offset(80 * scaleFactor, 0), Offset(80 * scaleFactor, scaledHeight - 40 * scaleFactor), axisPaint);
 
     if (data.isEmpty) {
       return;
@@ -133,9 +147,9 @@ class ScatterPlotPainter extends CustomPainter {
     // Plot each data point
     for (var rateData in data) {
       double x = ((DateTime.parse(rateData.date).millisecondsSinceEpoch - minTimeStamp) /
-              (maxTimeStamp - minTimeStamp) *
-              (size.width - 80)) + 40;
-      double y = size.height - ((rateData.rate - minRateExtended) / (maxRateExtended - minRateExtended) * (size.height - 50)) - 40;
+              (maxTimeStamp - minTimeStamp)) *
+              (scaledWidth - 80 * scaleFactor) + 40 * scaleFactor;
+      double y = scaledHeight - ((rateData.rate - minRateExtended) / (maxRateExtended - minRateExtended) * (scaledHeight - 50 * scaleFactor)) - 40 * scaleFactor;
 
       // Draw the dot
       canvas.drawCircle(Offset(x, y), 3, paint);
@@ -144,27 +158,19 @@ class ScatterPlotPainter extends CustomPainter {
       TextSpan rateSpan = TextSpan(style: textStyle, text: rateData.rate.toStringAsFixed(2));
       TextPainter rateTp = TextPainter(text: rateSpan, textDirection: ui.TextDirection.ltr);
       rateTp.layout();
-      rateTp.paint(canvas, Offset(80 + 10, y - rateTp.height / 2));
-    }
+      rateTp.paint(canvas, Offset(80 * scaleFactor + 10 * scaleFactor, y - rateTp.height / 2));
 
-    // Draw the date labels (slightly outside the x-axis range)
-    var dateLabels = [
-      DateTime.fromMillisecondsSinceEpoch(minTimeStamp),
-      DateTime.fromMillisecondsSinceEpoch(maxTimeStamp)
-    ];
-
-    for (var i = 0; i < dateLabels.length; i++) {
-      var x = i == 0 ? 40 : size.width - 60;
-      TextSpan dateSpan = TextSpan(style: textStyle, text: DateFormat('MM/dd').format(dateLabels[i]));
+      TextSpan dateSpan = TextSpan(style: textStyle, text: DateFormat('MM/dd').format(DateTime.parse(rateData.date)) + '\u200B');
       TextPainter dateTp = TextPainter(text: dateSpan, textDirection: ui.TextDirection.ltr);
       dateTp.layout();
-      dateTp.paint(canvas, Offset(x.toDouble(), (size.height - 30).toDouble()));
+
+      dateTp.paint(canvas, Offset(x - dateTp.width / 2, scaledHeight - 35 * scaleFactor));
     }
 
     // Draw the rate labels (min and max rate)
     var rateLabels = [minRateExtended, maxRateExtended];
     for (var i = 0; i < rateLabels.length; i++) {
-      var y = i == 0 ? size.height - 50 : 0;
+      var y = i == 0 ? scaledHeight - 50 * scaleFactor : 0;
       TextSpan span = TextSpan(
         style: TextStyle (
         color: Colors.red,
@@ -175,7 +181,7 @@ class ScatterPlotPainter extends CustomPainter {
       );
       TextPainter tp = TextPainter(text: span, textDirection: ui.TextDirection.ltr);
       tp.layout();
-      tp.paint(canvas, Offset(80 + 10, y - 7));
+      tp.paint(canvas, Offset(80 * scaleFactor + 10 * scaleFactor, y - 7 * scaleFactor));
     }
   }
 
