@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
         } else if (settings.name == '/CurrencyConverterHomePage') {
           return MaterialPageRoute(builder: (context) => const CurrencyConverterHomePage());
         } else if (settings.name == '/ExchangeRatesHistory') {
-          return MaterialPageRoute(builder: (context) => ExchangeRateHistoryPage());
+          return MaterialPageRoute(builder: (context) => ExchangeRatesHistoryPage());
         }
         return null;
       },
