@@ -127,12 +127,15 @@ class ScatterPlotPainter extends CustomPainter {
     final maxRate = data.map((e) => e.rate).reduce((a, b) => a > b ? a : b);
     final minRate = data.map((e) => e.rate).reduce((a, b) => a < b ? a : b);
 
+    final maxRateExtended = maxRate * 1.05;
+    final minRateExtended = minRate * 0.95;
+
     // Plot each data point
     for (var rateData in data) {
       double x = ((DateTime.parse(rateData.date).millisecondsSinceEpoch - minTimeStamp) /
               (maxTimeStamp - minTimeStamp) *
               (size.width - 80)) + 40;
-      double y = size.height - ((rateData.rate - minRate) / (maxRate - minRate) * (size.height - 50)) - 40;
+      double y = size.height - ((rateData.rate - minRateExtended) / (maxRateExtended - minRateExtended) * (size.height - 50)) - 40;
 
       // Draw the dot
       canvas.drawCircle(Offset(x, y), 3, paint);
@@ -159,13 +162,20 @@ class ScatterPlotPainter extends CustomPainter {
     }
 
     // Draw the rate labels (min and max rate)
-    var rateLabels = [minRate, maxRate];
+    var rateLabels = [minRateExtended, maxRateExtended];
     for (var i = 0; i < rateLabels.length; i++) {
       var y = i == 0 ? size.height - 50 : 0;
-      TextSpan span = TextSpan(style: textStyle, text: rateLabels[i].toStringAsFixed(2));
+      TextSpan span = TextSpan(
+        style: TextStyle (
+        color: Colors.red,
+        fontWeight: FontWeight.bold,
+        fontSize: 12,
+      ),
+      text: rateLabels[i].toStringAsFixed(2),
+      );
       TextPainter tp = TextPainter(text: span, textDirection: ui.TextDirection.ltr);
       tp.layout();
-      tp.paint(canvas, Offset(80 + 10, y + 20));
+      tp.paint(canvas, Offset(80 + 10, y - 7));
     }
   }
 
