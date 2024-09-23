@@ -304,7 +304,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
                 const SizedBox(height: 16),
                 Container(
                 height: 200,
-                child: Image.asset('popupimage.png'),
+                child: Image.asset('assets/popupimage.png'),
                 ),
                 const Spacer(),
                 Align(
