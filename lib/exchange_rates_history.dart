@@ -58,33 +58,46 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
         title: Text('Exchange Rate History'),
       ),
       body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 30,
-                childAspectRatio: 1.0,
-              ),
-              itemCount: _dataMap.length,
-              itemBuilder: (context, index) {
-                final currency = _dataMap.keys.elementAt(index);
-                final data = _dataMap[currency]!;
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 20,
+            mainAxisSpacing: 30,
+            childAspectRatio: 1.0,
+          ),
+          itemCount: _dataMap.length,
+          itemBuilder: (context, index) {
+            final currency = _dataMap.keys.elementAt(index);
+            final data = _dataMap[currency]!;
 
-            return  Column(
-              children: [
-                Text(
-                  '1 USD = ${data.last.rate.toStringAsFixed(2)} $currency',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                SizedBox(
-                  height: 300,
-                  child: CustomPaint(
-                    painter: ScatterPlotPainter(data),
-                   ),
-                ),
-              ],
+            return Container(
+              decoration: BoxDecoration(
+                color: Color(0xFF344D77),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.black, width: 2),
+              ),
+              padding: EdgeInsets.only(top: 16, bottom: 8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    '1 USD = ${data.last.rate.toStringAsFixed(2)} $currency',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.white, // Change text color for better visibility
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(
+                    height: 300,
+                    child: CustomPaint(
+                      painter: ScatterPlotPainter(data),
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         ),
@@ -145,26 +158,40 @@ class ScatterPlotPainter extends CustomPainter {
     final minRateExtended = minRate * 0.95;
 
     // Plot each data point
-    for (var rateData in data) {
-      double x = ((DateTime.parse(rateData.date).millisecondsSinceEpoch - minTimeStamp) /
+    for (var i = 0; i < data.length; i++) {
+      double x = ((DateTime.parse(data[i].date).millisecondsSinceEpoch - minTimeStamp) /
               (maxTimeStamp - minTimeStamp)) *
               (scaledWidth - 80 * scaleFactor) + 40 * scaleFactor;
-      double y = scaledHeight - ((rateData.rate - minRateExtended) / (maxRateExtended - minRateExtended) * (scaledHeight - 50 * scaleFactor)) - 40 * scaleFactor;
+      double y = scaledHeight - ((data[i].rate - minRateExtended) / (maxRateExtended - minRateExtended) * (scaledHeight - 50 * scaleFactor)) - 40 * scaleFactor;
 
       // Draw the dot
-      canvas.drawCircle(Offset(x, y), 3, paint);
+      canvas.drawCircle(Offset(x, y), 6, paint);
 
       // Draw the rate labels to the right of the y-axis, aligned with the dots
-      TextSpan rateSpan = TextSpan(style: textStyle, text: rateData.rate.toStringAsFixed(2));
+      TextSpan rateSpan = TextSpan(style: textStyle, text: data[i].rate.toStringAsFixed(2));
       TextPainter rateTp = TextPainter(text: rateSpan, textDirection: ui.TextDirection.ltr);
       rateTp.layout();
       rateTp.paint(canvas, Offset(80 * scaleFactor + 10 * scaleFactor, y - rateTp.height / 2));
 
-      TextSpan dateSpan = TextSpan(style: textStyle, text: DateFormat('MM/dd').format(DateTime.parse(rateData.date)) + '\u200B');
+      TextSpan dateSpan = TextSpan(style: textStyle, text: DateFormat('MM/dd').format(DateTime.parse(data[i].date)) + '\u200B');
       TextPainter dateTp = TextPainter(text: dateSpan, textDirection: ui.TextDirection.ltr);
       dateTp.layout();
 
       dateTp.paint(canvas, Offset(x - dateTp.width / 2, scaledHeight - 35 * scaleFactor));
+
+      if (i > 0) {
+        double prevX = ((DateTime.parse(data[i-1].date).millisecondsSinceEpoch - minTimeStamp) /
+            (maxTimeStamp - minTimeStamp)) *
+            (scaledWidth - 80 * scaleFactor) + 40 * scaleFactor;
+        double prevY = scaledHeight - ((data[i-1].rate - minRateExtended) / (maxRateExtended - minRateExtended) * (scaledHeight - 50 * scaleFactor)) - 40 * scaleFactor;
+
+        Paint linePaint = Paint()
+        ..color = Colors.blue
+        ..strokeWidth = 5
+        ..style = PaintingStyle.stroke;
+
+        canvas.drawLine(Offset(prevX, prevY), Offset(x, y), linePaint);
+      }
     }
 
     // Draw the rate labels (min and max rate)
