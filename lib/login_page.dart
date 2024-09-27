@@ -36,6 +36,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    NavigatorState _navigator = Navigator.of(context);
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 147, 143, 143),
       body: Center(
@@ -114,6 +115,22 @@ class _LoginPageState extends State<LoginPage> {
                       "Don't have an account? Register here.",
                       style: TextStyle(color: Colors.black), 
                     ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      _navigator.push(
+                        MaterialPageRoute(builder: (context) => const CurrencyConverterHomePage(isGuest: true)),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('Continue as Guest'),
                   ),
                 ],
               ),

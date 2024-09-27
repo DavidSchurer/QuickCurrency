@@ -50,7 +50,8 @@ class MyApp extends StatelessWidget {
 }
 
 class CurrencyConverterHomePage extends StatefulWidget {
-  const CurrencyConverterHomePage({super.key});
+  final bool isGuest;
+  const CurrencyConverterHomePage({Key? key, this.isGuest = false}) : super(key: key);
 
   @override
   _CurrencyConverterHomePageState createState() =>
@@ -97,6 +98,8 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
   }
 
   Future<void> _getCurrentUser() async {
+    if (widget.isGuest) return;
+
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       setState(() {
