@@ -6,7 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CurrencyConversionHistoryPage extends StatefulWidget {
-  const CurrencyConversionHistoryPage({super.key});
+  final bool isGuest;
+  const CurrencyConversionHistoryPage({Key? key, this.isGuest = false}) : super(key: key);
 
 
   @override
@@ -31,20 +32,114 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
     return currencySymbols[currencyCode] ?? '';
   }
 
+  Future<List<Conversion>> _loadConversionHistoryFromLocalStorage() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> history = prefs.getStringList('conversionHistory') ?? [];
+
+    List<Conversion> conversions = history.map((entry) {
+      List<String> parts = entry.split('|');
+      return Conversion(
+        date: parts[4],
+        fromCurrency: parts[0],
+        toCurrency: parts[2],
+        amount: double.parse(parts[1]),
+        conversionRate: double.parse(parts[3]),
+      );
+    }).toList();
+
+    conversions.sort((a, b) => (b.date ?? '').compareTo(a.date ?? ''));
+
+    return conversions;
+  }
+
+  Widget _buildConversionHistoryTable(List<Conversion> conversions) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          headingRowHeight: 56.0,
+          headingTextStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+          dataTextStyle: const TextStyle(
+            color: Colors.black,
+          ),
+          border: TableBorder.all(
+            color: Colors.black,
+            width: 1,
+          ),
+          columns: const <DataColumn>[
+            DataColumn(label: Text('Selected Currency')),
+            DataColumn(label: Text('Selected Amount')),
+            DataColumn(label: Text('Converted Currency')),
+            DataColumn(label: Text('Converted Amount')),
+            DataColumn(label: Text('Date')),
+          ],
+          rows: conversions.map((conversion) {
+            return DataRow(cells: <DataCell>[
+              DataCell(Text(conversion.fromCurrency ?? '')),
+              DataCell(Text(
+                '${getCurrencySymbol(conversion.fromCurrency ?? '')}${conversion.amount.toString()}')),
+              DataCell(Text(conversion.toCurrency ?? '')),
+              DataCell(Text(
+                '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate.toString()}')),
+              DataCell(Text(conversion.date ?? '')),
+              ]);
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
  @override
  Widget build(BuildContext context) {
-  final user = _auth.currentUser;
-
-  if (user == null) {
+  if (widget.isGuest) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Currency Conversion History'),
       ),
-      body: const Center(
-        child: Text('User not logged in'),
+      body: FutureBuilder<List<Conversion>>(
+          future: _loadConversionHistoryFromLocalStorage(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No conversion history available'));
+            }
+
+            return Center(
+              child: Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF344D77),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: _buildConversionHistoryTable(snapshot.data!),
+              ),
+            );
+          },
       ),
     );
-  }
+  } else {
+      final user = _auth.currentUser;
+
+      if (user == null) {
+        if (!widget.isGuest) {
+               return Scaffold(
+          appBar: AppBar(
+            title: const Text('Currency Conversion History'),
+          ),
+          body: const Center(
+            child: Text('No conversion history available'),
+          ),
+        );
+        }
+      }
+
   return Scaffold(
     backgroundColor: Color.fromARGB(255, 147, 143, 143),
     appBar: AppBar(
@@ -62,7 +157,7 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
         child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
         .collection('conversions')
-        .where('userEmail', isEqualTo: user.email)
+        .where('userEmail', isEqualTo: user?.email)
         .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -70,7 +165,7 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
-              child: Text('No conversions found for ${user.email}.',
+              child: Text('No conversions found for ${user?.email}.',
               style: const TextStyle(color: Colors.white)));
           }
 
@@ -78,6 +173,12 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
             final data = doc.data() as Map<String, dynamic>;
             return Conversion.fromMap(data);
           }).toList();
+
+          conversions.sort((a, b) {
+            final dateA = DateFormat('yyyy-MM-dd HH:mm:ss').parse(a.date!);
+            final dateB = DateFormat('yyyy-MM-dd HH:mm:ss').parse(b.date!);
+            return dateB.compareTo(dateA);
+          });
 
         return SingleChildScrollView(
           scrollDirection: Axis.vertical,
@@ -107,10 +208,10 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
                   return DataRow(cells: <DataCell>[
                     DataCell(Text(conversion.fromCurrency ?? '')),
                     DataCell(Text(
-                        '${getCurrencySymbol(conversion.fromCurrency ?? '')}${conversion.amount.toString()}')),
+                        '${getCurrencySymbol(conversion.fromCurrency ?? '')}${conversion.amount?.toStringAsFixed(2)}')),
                     DataCell(Text(conversion.toCurrency ?? '')),
                     DataCell(Text(
-                        '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate.toString()}')),
+                        '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate?.toStringAsFixed(2)}')),
                     DataCell(Text(conversion.date ?? '')),
                   ]);
                 }).toList(),
@@ -122,6 +223,7 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
         ),
       ),
     );
+   }
   }
 }
 

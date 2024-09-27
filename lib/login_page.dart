@@ -104,18 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: const Text('Login'),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const RegisterPage()),
-                      );
-                    },
-                    child: const Text(
-                      "Don't have an account? Register here.",
-                      style: TextStyle(color: Colors.black), 
-                    ),
-                  ),
+                  const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () {
                       _navigator.push(
@@ -131,6 +120,18 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     child: const Text('Continue as Guest'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RegisterPage()),
+                      );
+                    },
+                    child: const Text(
+                      "Don't have an account? Register here.",
+                      style: TextStyle(color: Colors.black), 
+                    ),
                   ),
                 ],
               ),

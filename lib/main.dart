@@ -24,7 +24,8 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isGuest;
+  const MyApp({Key? key, this.isGuest = false}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +38,7 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(
               builder: (context) => ExchangeRatesPage(selectedCurrency: args));
         } else if (settings.name == '/CurrencyConversionHistory') {
-          return MaterialPageRoute(builder: (context) => CurrencyConversionHistoryPage());
+          return MaterialPageRoute(builder: (context) => CurrencyConversionHistoryPage(isGuest: isGuest));
         } else if (settings.name == '/CurrencyConverterHomePage') {
           return MaterialPageRoute(builder: (context) => const CurrencyConverterHomePage());
         } else if (settings.name == '/ExchangeRatesHistory') {
