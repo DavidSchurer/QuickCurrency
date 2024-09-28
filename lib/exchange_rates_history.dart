@@ -159,13 +159,16 @@ class ScatterPlotPainter extends CustomPainter {
     final maxRateExtended = maxRate * 1.05;
     final minRateExtended = minRate * 0.95;
 
+    List <Offset> points = [];
+
     // Plot each data point
     for (var i = 0; i < data.length; i++) {
-      double x = ((DateTime.parse(data[i].date).millisecondsSinceEpoch - minTimeStamp) /
+      double x = ((maxTimeStamp - DateTime.parse(data[i].date).millisecondsSinceEpoch) /
               (maxTimeStamp - minTimeStamp)) *
               (scaledWidth - 80 * scaleFactor) + 40 * scaleFactor;
       double y = scaledHeight - ((data[i].rate - minRateExtended) / (maxRateExtended - minRateExtended) * (scaledHeight - 50 * scaleFactor)) - 40 * scaleFactor;
 
+      points.add(Offset(x, y));
       // Draw the dot
       canvas.drawCircle(Offset(x, y), 6, paint);
 
@@ -181,19 +184,14 @@ class ScatterPlotPainter extends CustomPainter {
 
       dateTp.paint(canvas, Offset(x - dateTp.width / 2, scaledHeight - 35 * scaleFactor));
 
-      if (i > 0) {
-        double prevX = ((DateTime.parse(data[i-1].date).millisecondsSinceEpoch - minTimeStamp) /
-            (maxTimeStamp - minTimeStamp)) *
-            (scaledWidth - 80 * scaleFactor) + 40 * scaleFactor;
-        double prevY = scaledHeight - ((data[i-1].rate - minRateExtended) / (maxRateExtended - minRateExtended) * (scaledHeight - 50 * scaleFactor)) - 40 * scaleFactor;
+          Paint linePaint = Paint()
+            ..color = Colors.blue
+            ..strokeWidth = 2
+            ..style = PaintingStyle.stroke;
 
-        Paint linePaint = Paint()
-        ..color = Colors.blue
-        ..strokeWidth = 5
-        ..style = PaintingStyle.stroke;
-
-        canvas.drawLine(Offset(prevX, prevY), Offset(x, y), linePaint);
-      }
+            for (int i = 1; i < points.length; i++) {
+              canvas.drawLine(points[i - 1], points[i], linePaint);
+            }
     }
 
     // Draw the rate labels (min and max rate)
