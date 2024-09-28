@@ -4,6 +4,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'config.dart';
 
 class ExchangeRatesHistoryPage extends StatefulWidget {
   @override
@@ -17,7 +20,48 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
   @override
   void initState() {
     super.initState();
-    _fetchHistoricalData();
+    _fetchAndStoreExchangeRates();
+  }
+
+  Future<void> _fetchAndStoreExchangeRates() async {
+    const String url =
+        'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey&currencies=USD,GBP,JPY,AUD,CAD,MXN,EUR';
+
+      try {
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final rates = data['data'];
+
+          DateTime currentDate = DateTime.now();
+          String formattedDate = DateFormat('yyyy-MM-dd').format(currentDate);
+
+          for (String currency in rates.keys) {
+            double rate = rates[currency];
+
+            final existingRate = await FirebaseFirestore.instance
+            .collection('exchange_rates')
+            .where('currency', isEqualTo: currency)
+            .where('date', isEqualTo: formattedDate)
+            .limit(1)
+            .get();
+
+            if (existingRate.docs.isEmpty) {
+              await FirebaseFirestore.instance.collection('exchange_rates').add({
+                'currency': currency,
+                'rate': rate,
+                'date': formattedDate,
+              });
+            }
+          }
+
+          await _fetchHistoricalData();
+        } else {
+          print('Error fetching exchange rates: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error fetching rates: $e');
+      } 
   }
 
   Future<void> _fetchHistoricalData() async {
@@ -27,7 +71,7 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
           .orderBy('date')
           .get();
 
-      final Map<String, List<ExchangeRateData>> historicalDataMap = {};
+      final Map<String, Map<String, ExchangeRateData>> uniqueHistoricalDataMap = {};
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
@@ -35,12 +79,17 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
         final rate = data['rate'];
         final date = data['date'];
 
-        if (!historicalDataMap.containsKey(currency)) {
-          historicalDataMap[currency] = [];
+        if (!uniqueHistoricalDataMap.containsKey(currency)) {
+          uniqueHistoricalDataMap[currency] = {};
         }
 
-        historicalDataMap[currency]!.add(ExchangeRateData(currency, rate, date));
+        uniqueHistoricalDataMap[currency]![date] = ExchangeRateData(currency, rate, date);
       }
+
+      Map<String, List<ExchangeRateData>> historicalDataMap = {};
+      uniqueHistoricalDataMap.forEach((currency, dataMap) {
+        historicalDataMap[currency] = dataMap.values.toList();
+      });
 
       setState(() {
         _dataMap.clear();
@@ -84,7 +133,7 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    '1 USD = ${data.last.rate.toStringAsFixed(2)} $currency',
+                    '\$1 USD -> $currency',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
@@ -123,6 +172,7 @@ class ScatterPlotPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+
     const double scaleFactor = 1.5;
 
     final paint = Paint()
