@@ -7,15 +7,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CurrencyConversionHistoryPage extends StatefulWidget {
   final bool isGuest;
-  const CurrencyConversionHistoryPage({Key? key, this.isGuest = false}) : super(key: key);
-
+  const CurrencyConversionHistoryPage({Key? key, this.isGuest = false})
+      : super(key: key);
 
   @override
   _CurrencyConversionHistoryPageState createState() =>
-    _CurrencyConversionHistoryPageState();
+      _CurrencyConversionHistoryPageState();
 }
 
-class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistoryPage> {
+class _CurrencyConversionHistoryPageState
+    extends State<CurrencyConversionHistoryPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final Map<String, String> currencySymbols = {
@@ -81,61 +82,167 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
             return DataRow(cells: <DataCell>[
               DataCell(Text(conversion.fromCurrency ?? '')),
               DataCell(Text(
-                '${getCurrencySymbol(conversion.fromCurrency ?? '')}${conversion.amount.toString()}')),
+                  '${getCurrencySymbol(conversion.fromCurrency ?? '')}${conversion.amount.toString()}')),
               DataCell(Text(conversion.toCurrency ?? '')),
               DataCell(Text(
-                '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate.toString()}')),
+                  '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate.toString()}')),
               DataCell(Text(conversion.date ?? '')),
-              DataCell(
-                GestureDetector(
-                  onTap: () async {
-                    try {
-                      await FirebaseFirestore.instance
+              DataCell(GestureDetector(
+                onTap: () async {
+                  try {
+                    final docId = conversion.date;
+                    await FirebaseFirestore.instance
                         .collection('conversions')
-                        .doc(conversion.date)
+                        .doc(docId)
                         .delete();
 
-                        setState(() {
-                          conversions.remove(conversion);
-                        });
+                    setState(() {
+                      conversions.remove(conversion);
+                    });
 
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Conversion deleted successfully'),
-                        ));
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('Error deleting conversion: $e'),
-                      ));
-                    }
-                  },
-                  child: const Icon(Icons.close, color: Colors.red), // Red X Icon for deletion
-                )
-              )
-              ]);
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Conversion deleted successfully'),
+                    ));
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Error deleting conversion: $e'),
+                    ));
+                  }
+                },
+                child: const Icon(Icons.close,
+                    color: Colors.red), // Red X Icon for deletion
+              ))
+            ]);
           }).toList(),
         ),
       ),
     );
   }
 
- @override
- Widget build(BuildContext context) {
-  if (widget.isGuest) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Currency Conversion History'),
+  Widget _buildFooterBar(User? user, List<Conversion> conversions) {
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        color: Color.fromARGB(255, 147, 143, 143),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
       ),
-      body: FutureBuilder<List<Conversion>>(
+      child: Center(
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.black,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          onPressed: () async {
+            try {
+              await FirebaseFirestore.instance
+                  .collection('conversions')
+                  .where('userEmail', isEqualTo: user?.email)
+                  .get()
+                  .then((querySnapshot) {
+                querySnapshot.docs.forEach((doc) {
+                  doc.reference.delete();
+                });
+              });
+
+              setState(() {
+                conversions.clear();
+              });
+
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Conversion history cleared successfully'),
+              ));
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Error clearing conversion history: $e'),
+              ));
+            }
+          },
+          child: const Text('Clear Conversion History'),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.isGuest) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Currency Conversion History'),
+        ),
+        body: FutureBuilder<List<Conversion>>(
           future: _loadConversionHistoryFromLocalStorage(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No conversion history available'));
+              return const Center(
+                  child: Text('No conversion history available'));
             }
 
-            return Center(
+            return Column(
+              children: [
+                Expanded(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: 100,
+                      maxHeight: MediaQuery.of(context).size.height * 0.6,
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF344D77),
+                        borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: _buildConversionHistoryTable(snapshot.data!),
+                    ),
+                  ),
+                ),
+                _buildFooterBar(_auth.currentUser, snapshot.data!),
+              ],
+            );
+          },
+        ),
+      );
+    } else {
+      final user = _auth.currentUser;
+
+      if (user == null) {
+        if (!widget.isGuest) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Currency Conversion History'),
+            ),
+            body: const Center(
+              child: Text('No conversion history available'),
+            ),
+          );
+        }
+      }
+
+      return Scaffold(
+        backgroundColor: Color.fromARGB(255, 147, 143, 143),
+        appBar: AppBar(
+          backgroundColor: Color.fromARGB(255, 147, 143, 143),
+          title: const Text('Currency Conversion History'),
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: 100,
+                  maxHeight: MediaQuery.of(context).size.height * 0.6,
+                ),
+
               child: Container(
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(16),
@@ -143,138 +250,119 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
                   color: const Color(0xFF344D77),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: _buildConversionHistoryTable(snapshot.data!),
-              ),
-            );
-          },
-      ),
-    );
-  } else {
-      final user = _auth.currentUser;
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('conversions')
+                      .where('userEmail', isEqualTo: user?.email)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Center(
+                          child: Text(
+                              'No conversions found for ${user?.email}.',
+                              style: const TextStyle(color: Colors.white)));
+                    }
 
-      if (user == null) {
-        if (!widget.isGuest) {
-               return Scaffold(
-          appBar: AppBar(
-            title: const Text('Currency Conversion History'),
-          ),
-          body: const Center(
-            child: Text('No conversion history available'),
-          ),
-        );
-        }
-      }
+                    final conversions = snapshot.data!.docs.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      return Conversion.fromMap(data);
+                    }).toList();
 
-  return Scaffold(
-    backgroundColor: Color.fromARGB(255, 147, 143, 143),
-    appBar: AppBar(
-      backgroundColor: Color.fromARGB(255, 147, 143, 143),
-      title: const Text('Currency Conversion History'),
-    ),
-    body: Center(
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF344D77),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-        .collection('conversions')
-        .where('userEmail', isEqualTo: user?.email)
-        .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(
-              child: Text('No conversions found for ${user?.email}.',
-              style: const TextStyle(color: Colors.white)));
-          }
+                    conversions.sort((a, b) {
+                      final dateA =
+                          DateFormat('yyyy-MM-dd HH:mm:ss').parse(a.date!);
+                      final dateB =
+                          DateFormat('yyyy-MM-dd HH:mm:ss').parse(b.date!);
+                      return dateB.compareTo(dateA);
+                    });
 
-          final conversions = snapshot.data!.docs.map((doc) {
-            final data = doc.data() as Map<String, dynamic>;
-            return Conversion.fromMap(data);
-          }).toList();
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          headingRowHeight: 56.0,
+                          headingTextStyle: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                          dataTextStyle: const TextStyle(
+                            color: Colors.black,
+                          ),
+                          border: TableBorder.all(
+                            color: Colors.black,
+                            width: 1,
+                          ),
+                          columns: const <DataColumn>[
+                            DataColumn(label: Text('Selected Currency')),
+                            DataColumn(label: Text('Selected Amount')),
+                            DataColumn(label: Text('Converted Currency')),
+                            DataColumn(label: Text('Converted Amount')),
+                            DataColumn(label: Text('Date')),
+                            DataColumn(label: Text('Delete Conversion')),
+                          ],
+                          rows: conversions.map((conversion) {
+                            return DataRow(cells: <DataCell>[
+                              DataCell(Text(conversion.fromCurrency ?? '')),
+                              DataCell(Text(
+                                  '${getCurrencySymbol(conversion.fromCurrency ?? '')}${conversion.amount?.toStringAsFixed(2)}')),
+                              DataCell(Text(conversion.toCurrency ?? '')),
+                              DataCell(Text(
+                                  '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate?.toStringAsFixed(2)}')),
+                              DataCell(Text(conversion.date ?? '')),
+                              DataCell(
+                                GestureDetector(
+                                  onTap: () async {
+                                    try {
+                                      final docId = snapshot.data!.docs
+                                          .firstWhere((doc) =>
+                                              doc['date'] == conversion.date)
+                                          .id;
 
-          conversions.sort((a, b) {
-            final dateA = DateFormat('yyyy-MM-dd HH:mm:ss').parse(a.date!);
-            final dateB = DateFormat('yyyy-MM-dd HH:mm:ss').parse(b.date!);
-            return dateB.compareTo(dateA);
-          });
+                                      await FirebaseFirestore.instance
+                                          .collection('conversions')
+                                          .doc(docId)
+                                          .delete();
 
-        return SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              headingRowHeight: 56.0,
-              headingTextStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              dataTextStyle: const TextStyle(
-                color: Colors.black,
-              ),
-              border: TableBorder.all(
-                color: Colors.black,
-                width: 1,
-              ),
-              columns: const <DataColumn>[
-                DataColumn(label: Text('Selected Currency')),
-                DataColumn(label: Text('Selected Amount')),
-                DataColumn(label: Text('Converted Currency')),
-                DataColumn(label: Text('Converted Amount')),
-                DataColumn(label: Text('Date')),
-                DataColumn(label: Text('Delete Conversion')),
-              ],
-                rows: conversions.map((conversion) {
-                  return DataRow(cells: <DataCell>[
-                    DataCell(Text(conversion.fromCurrency ?? '')),
-                    DataCell(Text(
-                        '${getCurrencySymbol(conversion.fromCurrency ?? '')}${conversion.amount?.toStringAsFixed(2)}')),
-                    DataCell(Text(conversion.toCurrency ?? '')),
-                    DataCell(Text(
-                        '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate?.toStringAsFixed(2)}')),
-                    DataCell(Text(conversion.date ?? '')),
-                    DataCell(
-                      GestureDetector(
-                        onTap: () async {
-                          try {
-                            await FirebaseFirestore.instance
-                            .collection('conversions')
-                            .doc(conversion.date)
-                            .delete();
+                                      setState(() {
+                                        conversions.remove(conversion);
+                                      });
 
-                            setState(() {
-                              conversions.remove(conversion);
-                            });
-
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('Conversion deleted successfully.'),
-                            ));
-                          } catch(e) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('Conversion deleted successfully.'),
-                            ));
-                            }
-                          },
-                          child: const Icon(Icons.close, color: Colors.red),
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                        content: Text(
+                                            'Conversion deleted successfully.'),
+                                      ));
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                        content: Text(
+                                            'Conversion deleted successfully.'),
+                                      ));
+                                    }
+                                  },
+                                  child: const Icon(Icons.close,
+                                      color: Colors.red),
+                                ),
+                              ),
+                            ]);
+                          }).toList(),
+                        ),
                       ),
-                    ),
-                  ]);
-                }).toList(),
-                 ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
+              ),
+              ),
+            ),
+            _buildFooterBar(user, []),
+          ],
         ),
-      ),
-    );
-   }
+      );
+    }
   }
 }
 
@@ -296,7 +384,8 @@ class Conversion {
   factory Conversion.fromMap(Map<String, dynamic> map) {
     return Conversion(
       date: map['date'] != null ? map['date'] as String : '',
-      fromCurrency: map['fromCurrency'] != null ? map['fromCurrency'] as String : '',
+      fromCurrency:
+          map['fromCurrency'] != null ? map['fromCurrency'] as String : '',
       toCurrency: map['toCurrency'] != null ? map['toCurrency'] as String : '',
       amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
       conversionRate: (map['conversionRate'] as num?)?.toDouble() ?? 0.0,
