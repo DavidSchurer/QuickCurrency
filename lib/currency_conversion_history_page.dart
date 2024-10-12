@@ -341,8 +341,10 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
                                       ));
                                     }
                                   },
-                                  child: const Icon(Icons.close,
-                                      color: Colors.red),
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: const Icon(Icons.close, color: Colors.red),
+                                  )
                                 ),
                               ),
                             ]);
