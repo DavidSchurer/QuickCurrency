@@ -55,8 +55,7 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
   Widget _buildConversionHistoryTable(List<Conversion> conversions) {
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+      child: FittedBox(
         child: DataTable(
           headingRowHeight: 56.0,
           headingTextStyle: const TextStyle(
@@ -76,6 +75,7 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
             DataColumn(label: Text('Converted Currency')),
             DataColumn(label: Text('Converted Amount')),
             DataColumn(label: Text('Date')),
+            DataColumn(label: Text('Delete Conversion')),
           ],
           rows: conversions.map((conversion) {
             return DataRow(cells: <DataCell>[
@@ -86,6 +86,31 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
               DataCell(Text(
                 '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate.toString()}')),
               DataCell(Text(conversion.date ?? '')),
+              DataCell(
+                GestureDetector(
+                  onTap: () async {
+                    try {
+                      await FirebaseFirestore.instance
+                        .collection('conversions')
+                        .doc(conversion.date)
+                        .delete();
+
+                        setState(() {
+                          conversions.remove(conversion);
+                        });
+
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Conversion deleted successfully'),
+                        ));
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Error deleting conversion: $e'),
+                      ));
+                    }
+                  },
+                  child: const Icon(Icons.close, color: Colors.red), // Red X Icon for deletion
+                )
+              )
               ]);
           }).toList(),
         ),
@@ -203,6 +228,7 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
                 DataColumn(label: Text('Converted Currency')),
                 DataColumn(label: Text('Converted Amount')),
                 DataColumn(label: Text('Date')),
+                DataColumn(label: Text('Delete Conversion')),
               ],
                 rows: conversions.map((conversion) {
                   return DataRow(cells: <DataCell>[
@@ -213,6 +239,31 @@ class _CurrencyConversionHistoryPageState extends State<CurrencyConversionHistor
                     DataCell(Text(
                         '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate?.toStringAsFixed(2)}')),
                     DataCell(Text(conversion.date ?? '')),
+                    DataCell(
+                      GestureDetector(
+                        onTap: () async {
+                          try {
+                            await FirebaseFirestore.instance
+                            .collection('conversions')
+                            .doc(conversion.date)
+                            .delete();
+
+                            setState(() {
+                              conversions.remove(conversion);
+                            });
+
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('Conversion deleted successfully.'),
+                            ));
+                          } catch(e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('Conversion deleted successfully.'),
+                            ));
+                            }
+                          },
+                          child: const Icon(Icons.close, color: Colors.red),
+                      ),
+                    ),
                   ]);
                 }).toList(),
                  ),
