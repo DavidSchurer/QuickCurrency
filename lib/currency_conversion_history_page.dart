@@ -197,17 +197,17 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
 
             return Column(
               children: [
-                Expanded(
-                    child: Container(
+                    Container(
                       margin: const EdgeInsets.all(16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: const Color(0xFF344D77),
                         borderRadius: BorderRadius.circular(16),
                     ),
-                    child: _buildConversionHistoryTable(snapshot.data!),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: _buildConversionHistoryTable(snapshot.data!),
                     ),
-  
                 ),
                 _buildFooterBar(_auth.currentUser, snapshot.data!),
               ],
@@ -239,8 +239,7 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
         ),
         body: Column(
           children: [
-            Expanded(
-              child: Container(
+              Container(
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -355,7 +354,6 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
                   },
                 ),
               ),
-            ),
             _buildFooterBar(user, []),
           ],
         ),
