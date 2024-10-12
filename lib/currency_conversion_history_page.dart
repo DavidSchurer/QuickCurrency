@@ -53,71 +53,79 @@ class _CurrencyConversionHistoryPageState
     return conversions;
   }
 
-  Widget _buildConversionHistoryTable(List<Conversion> conversions) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: FittedBox(
-        child: DataTable(
-          headingRowHeight: 56.0,
-          headingTextStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-          dataTextStyle: const TextStyle(
-            color: Colors.black,
-          ),
-          border: TableBorder.all(
-            color: Colors.black,
-            width: 1,
-          ),
-          columns: const <DataColumn>[
-            DataColumn(label: Text('Selected Currency')),
-            DataColumn(label: Text('Selected Amount')),
-            DataColumn(label: Text('Converted Currency')),
-            DataColumn(label: Text('Converted Amount')),
-            DataColumn(label: Text('Date')),
-            DataColumn(label: Text('Delete Conversion')),
-          ],
-          rows: conversions.map((conversion) {
-            return DataRow(cells: <DataCell>[
-              DataCell(Text(conversion.fromCurrency ?? '')),
-              DataCell(Text(
-                  '${getCurrencySymbol(conversion.fromCurrency ?? '')}${conversion.amount.toString()}')),
-              DataCell(Text(conversion.toCurrency ?? '')),
-              DataCell(Text(
-                  '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate.toString()}')),
-              DataCell(Text(conversion.date ?? '')),
-              DataCell(GestureDetector(
-                onTap: () async {
-                  try {
-                    final docId = conversion.date;
-                    await FirebaseFirestore.instance
-                        .collection('conversions')
-                        .doc(docId)
-                        .delete();
-
-                    setState(() {
-                      conversions.remove(conversion);
-                    });
-
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Conversion deleted successfully'),
-                    ));
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Error deleting conversion: $e'),
-                    ));
-                  }
-                },
-                child: const Icon(Icons.close,
-                    color: Colors.red), // Red X Icon for deletion
-              ))
-            ]);
-          }).toList(),
+Widget _buildConversionHistoryTable(List<Conversion> conversions) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white, // Change this to match your design
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 8.0,
+          offset: Offset(0, 4), // Adjust shadow position
         ),
+      ],
+    ),
+    child: DataTable(
+      headingRowHeight: 56.0,
+      headingTextStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
       ),
-    );
-  }
+      dataTextStyle: const TextStyle(
+        color: Colors.black,
+      ),
+      border: TableBorder.all(
+        color: Colors.black,
+        width: 1,
+      ),
+      columns: const <DataColumn>[
+        DataColumn(label: Text('Selected Currency')),
+        DataColumn(label: Text('Selected Amount')),
+        DataColumn(label: Text('Converted Currency')),
+        DataColumn(label: Text('Converted Amount')),
+        DataColumn(label: Text('Date')),
+        DataColumn(label: Text('Delete Conversion')),
+      ],
+      rows: conversions.map((conversion) {
+        return DataRow(cells: <DataCell>[
+          DataCell(Text(conversion.fromCurrency ?? '')),
+          DataCell(Text(
+              '${getCurrencySymbol(conversion.fromCurrency ?? '')}${conversion.amount.toString()}')),
+          DataCell(Text(conversion.toCurrency ?? '')),
+          DataCell(Text(
+              '${getCurrencySymbol(conversion.toCurrency ?? '')}${conversion.conversionRate.toString()}')),
+          DataCell(Text(conversion.date ?? '')),
+          DataCell(GestureDetector(
+            onTap: () async {
+              try {
+                final docId = conversion.date;
+                await FirebaseFirestore.instance
+                    .collection('conversions')
+                    .doc(docId)
+                    .delete();
+
+                setState(() {
+                  conversions.remove(conversion);
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Conversion deleted successfully'),
+                ));
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Error deleting conversion: $e'),
+                ));
+              }
+            },
+            child: const Icon(Icons.close,
+                color: Colors.red), // Red X Icon for deletion
+          ))
+        ]);
+      }).toList(),
+    ),
+  );
+}
 
   Widget _buildFooterBar(User? user, List<Conversion> conversions) {
     return Container(
@@ -190,11 +198,6 @@ class _CurrencyConversionHistoryPageState
             return Column(
               children: [
                 Expanded(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: 100,
-                      maxHeight: MediaQuery.of(context).size.height * 0.6,
-                    ),
                     child: Container(
                       margin: const EdgeInsets.all(16),
                       padding: const EdgeInsets.all(16),
@@ -204,7 +207,7 @@ class _CurrencyConversionHistoryPageState
                     ),
                     child: _buildConversionHistoryTable(snapshot.data!),
                     ),
-                  ),
+  
                 ),
                 _buildFooterBar(_auth.currentUser, snapshot.data!),
               ],
@@ -237,12 +240,6 @@ class _CurrencyConversionHistoryPageState
         body: Column(
           children: [
             Expanded(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: 100,
-                  maxHeight: MediaQuery.of(context).size.height * 0.6,
-                ),
-
               child: Container(
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(16),
@@ -355,7 +352,6 @@ class _CurrencyConversionHistoryPageState
                     );
                   },
                 ),
-              ),
               ),
             ),
             _buildFooterBar(user, []),
