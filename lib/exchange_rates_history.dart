@@ -331,6 +331,17 @@ class ScatterPlotPainter extends CustomPainter {
     final maxRate = data.map((e) => e.rate).reduce(max);
     final minRate = data.map((e) => e.rate).reduce(min);
 
+    final range = maxRate - minRate;
+
+    final numIntervals = 5;
+
+    final intervalSize = range / numIntervals;
+
+    final relativeRates = [
+      for (int i = 0; i <= numIntervals; i++)
+        (minRate + (i * intervalSize)).toStringAsFixed(2)
+    ];
+
     final maxRateExtended = maxRate * 1.05;
     final minRateExtended = minRate * 0.95;
 
@@ -359,7 +370,7 @@ class ScatterPlotPainter extends CustomPainter {
         // label every few dots
         final dateLabel =
             DateFormat('MM/dd').format(DateTime.parse(data[i].date));
-        final dateSpan = TextSpan(style: textStyle, text: dateLabel);
+        final dateSpan = TextSpan(style: textStyle.copyWith(fontWeight: FontWeight.bold), text: dateLabel);
         final dateTp =
             TextPainter(text: dateSpan, textDirection: ui.TextDirection.ltr);
         dateTp.layout();
@@ -371,10 +382,15 @@ class ScatterPlotPainter extends CustomPainter {
         canvas.restore();
       }
 
+      final yAxisLabelStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 12,
+      );
+
       // Draw y-axis rate labels
-      if (i == 0 || i == data.length - 1) {
-        final rateLabel = data[i].rate.toStringAsFixed(2);
-        final rateSpan = TextSpan(style: textStyle, text: rateLabel);
+      for (int i = 0; i <= numIntervals; i++) {
+        final rateLabel = relativeRates[i];
+        final rateSpan = TextSpan(style: yAxisLabelStyle, text: rateLabel);
         final rateTp =
             TextPainter(text: rateSpan, textDirection: ui.TextDirection.ltr);
         rateTp.layout();
@@ -382,7 +398,8 @@ class ScatterPlotPainter extends CustomPainter {
         rateTp.paint(
             canvas,
             Offset(origin.dx - rateTp.width + 7,
-                y - rateTp.height / 2)); // position near y-axis
+              origin.dy - (i * intervalSize / range) * graphHeight -
+              rateTp.height / 2));
       }
     }
 
