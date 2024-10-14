@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:ui';
-import 'exchange_rates_page.dart'; 
+import 'exchange_rates_page.dart';
 import 'currency_conversion_history_page.dart';
 import 'welcome_page.dart';
 import 'config.dart';
@@ -38,11 +38,15 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(
               builder: (context) => ExchangeRatesPage(selectedCurrency: args));
         } else if (settings.name == '/CurrencyConversionHistory') {
-          return MaterialPageRoute(builder: (context) => CurrencyConversionHistoryPage(isGuest: isGuest));
+          return MaterialPageRoute(
+              builder: (context) =>
+                  CurrencyConversionHistoryPage(isGuest: isGuest));
         } else if (settings.name == '/CurrencyConverterHomePage') {
-          return MaterialPageRoute(builder: (context) => const CurrencyConverterHomePage());
+          return MaterialPageRoute(
+              builder: (context) => const CurrencyConverterHomePage());
         } else if (settings.name == '/ExchangeRatesHistory') {
-          return MaterialPageRoute(builder: (context) => ExchangeRatesHistoryPage());
+          return MaterialPageRoute(
+              builder: (context) => ExchangeRatesHistoryPage());
         }
         return null;
       },
@@ -52,7 +56,8 @@ class MyApp extends StatelessWidget {
 
 class CurrencyConverterHomePage extends StatefulWidget {
   final bool isGuest;
-  const CurrencyConverterHomePage({Key? key, this.isGuest = false}) : super(key: key);
+  const CurrencyConverterHomePage({Key? key, this.isGuest = false})
+      : super(key: key);
 
   @override
   _CurrencyConverterHomePageState createState() =>
@@ -170,7 +175,8 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
     List<String> history = prefs.getStringList('conversionHistory') ?? [];
 
     String timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-    String entry = '$selectedCurrency|$inputAmount|$_selectedCurrencyCode|${_selectedCurrencyConversion?.toStringAsFixed(2)}|$timestamp';
+    String entry =
+        '$selectedCurrency|$inputAmount|$_selectedCurrencyCode|${_selectedCurrencyConversion?.toStringAsFixed(2)}|$timestamp';
 
     history.add(entry);
     await prefs.setStringList('conversionHistory', history);
@@ -277,162 +283,167 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Center(
             child: Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.15,
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: const Color(0xFF344D77),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.black, width: 2),
-            ),
-            height: 400,
-            child: Column(
-              children: [
-                const Text(
-                  "QuickCurrency",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const Text(
-                  "Quick and Easy Exchange Rates",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                height: 200,
-                child: Image.asset('assets/popupimage.png'),
-                ),
-                const Spacer(),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _chooseCurrencyPopup();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 10),
-                      ),
-                      child: const Text(
-                        "Choose Currency to Convert",
-                        style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-          ),
-      );
-    },
-  );
-}
-
-void _chooseCurrencyPopup() {
-  Navigator.of(context).pop();
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              backgroundColor: Colors.transparent, // Transparent for custom container styling
+              backgroundColor: Colors.transparent,
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.15,
+                padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
                   color: const Color(0xFF344D77),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.black, width: 2), // Added black border
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.black, width: 2),
                 ),
-                padding: const EdgeInsets.all(16.0), // Add padding inside the border
+                height: 400,
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      "Select Currency",
-                      textAlign: TextAlign.center,
+                      "QuickCurrency",
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
                         fontSize: 28,
+                        fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 16), // Add space between title and content
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: exchangeRates.keys.map((currency) {
-                        bool isHovering = false;
-                        bool isSelected = false;
-
-                        return StatefulBuilder(
-                          builder: (context, setInnerState) {
-                            return MouseRegion(
-                              onEnter: (_) => setInnerState(() => isHovering = true),
-                              onExit: (_) => setInnerState(() => isHovering = false),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  setState(() {
-                                    selectedCurrency = currency;
-                                    _updateSelectedCurrencyText();
-                                    usdController.text = '';
-                                    inputAmount = 0.0;
-                                    convertedAmounts.clear();
-                                  });
-                                  await _saveSelectedCurrency();
-                                  Navigator.of(context).pop();
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: isHovering || isSelected
-                                          ? Colors.black
-                                          : Colors.transparent,
-                                      width: 2,
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 20),
-                                  child: Center(
-                                    child: Text(
-                                      currency,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.black,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }).toList(),
+                    const Text(
+                      "Quick and Easy Exchange Rates",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      height: 200,
+                      child: Image.asset('assets/popupimage.png'),
+                    ),
+                    const Spacer(),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _chooseCurrencyPopup();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 10),
+                        ),
+                        child: const Text(
+                          "Choose Currency to Convert",
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-            );
-          },
-        ),
-      );
-    },
-  );
-}
+            ),
+          ),
+        );
+      },
+    );
+  }
 
+  void _chooseCurrencyPopup() {
+    Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return Dialog(
+                backgroundColor: Colors
+                    .transparent, // Transparent for custom container styling
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.15,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF344D77),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: Colors.black, width: 2), // Added black border
+                  ),
+                  padding: const EdgeInsets.all(
+                      16.0), // Add padding inside the border
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Select Currency",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(
+                          height: 16), // Add space between title and content
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: exchangeRates.keys.map((currency) {
+                          bool isHovering = false;
+                          bool isSelected = false;
+
+                          return StatefulBuilder(
+                            builder: (context, setInnerState) {
+                              return MouseRegion(
+                                onEnter: (_) =>
+                                    setInnerState(() => isHovering = true),
+                                onExit: (_) =>
+                                    setInnerState(() => isHovering = false),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    setState(() {
+                                      selectedCurrency = currency;
+                                      _updateSelectedCurrencyText();
+                                      usdController.text = '';
+                                      inputAmount = 0.0;
+                                      convertedAmounts.clear();
+                                    });
+                                    await _saveSelectedCurrency();
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: isHovering || isSelected
+                                            ? Colors.black
+                                            : Colors.transparent,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10, horizontal: 20),
+                                    child: Center(
+                                      child: Text(
+                                        currency,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.black,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
 
   void _updateSelectedCurrencyText() {
     setState(() {
@@ -455,28 +466,36 @@ void _chooseCurrencyPopup() {
       backgroundColor: Color.fromARGB(255, 147, 143, 143),
       appBar: AppBar(
         toolbarHeight: 100,
-        backgroundColor: Color.fromARGB(255, 147, 143, 143),
+        backgroundColor: Color.fromARGB(255, 100, 100, 100),
         centerTitle: true,
-        title: const Column(
-          children: [
-            Text(
-              "QuickCurrency",
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+        shape:
+            Border.all(color: const Color.fromARGB(255, 58, 58, 58), width: 5),
+        title: Container(
+          decoration: BoxDecoration(
+            color: Color.fromARGB(255, 100, 100, 100),
+          ),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "QuickCurrency",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              "Quick and Easy Exchange Rates",
-              style: TextStyle(
-                fontSize: 16,
-                fontStyle: FontStyle.italic,
-                color: Colors.black,
+              Text(
+                "Quick and Easy Exchange Rates",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       body: Padding(
@@ -484,19 +503,56 @@ void _chooseCurrencyPopup() {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _selectedCurrencyText,
-              style: const TextStyle(fontSize: 18, color: Colors.black),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: usdController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                labelText: selectedCurrency,
-                hintText: _hintText,
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF344D77),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.black, width: 2),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text(
+                      _selectedCurrencyText,
+                      style: const TextStyle(fontSize: 18, color: Colors.black),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: usdController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      cursorColor: Colors.black,
+                      style: const TextStyle(fontSize: 18, color: Colors.black),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        labelText: selectedCurrency,
+                        labelStyle:
+                            const TextStyle(fontSize: 18, color: Colors.black),
+                        hintText: _hintText,
+                        hintStyle:
+                            const TextStyle(fontSize: 18, color: Colors.black),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        disabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -514,20 +570,24 @@ void _chooseCurrencyPopup() {
                     onTap: () async {
                       setState(() {
                         _selectedCurrencyCode = currencyCode;
-                        _selectedCurrencyConversion = convertedAmounts[currencyCode] ?? 0.0;
+                        _selectedCurrencyConversion =
+                            convertedAmounts[currencyCode] ?? 0.0;
                       });
 
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
                       prefs.setString('selectedCurrency', selectedCurrency);
                       prefs.setDouble('inputAmount', inputAmount);
-                      prefs.setDouble('conversionRate', _selectedCurrencyConversion ?? 0.0);
-                      
+                      prefs.setDouble(
+                          'conversionRate', _selectedCurrencyConversion ?? 0.0);
+
                       await _saveConversionHistory();
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color:
-                            isSelected ? const Color(0xFF344D77) : const Color(0xFF344D77),
+                        color: isSelected
+                            ? const Color(0xFF344D77)
+                            : const Color(0xFF344D77),
                         borderRadius: BorderRadius.circular(10),
                         border: isSelected
                             ? Border.all(color: Colors.black, width: 3)
@@ -585,42 +645,50 @@ void _chooseCurrencyPopup() {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        color: Color.fromARGB(255, 147, 143, 143),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                _navigateToExchangeRatesPage();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: const Color.fromARGB(255, 58, 58, 58),
+            width: 5,
+          ),
+        ),
+        child: BottomAppBar(
+          color: Color.fromARGB(255, 100, 100, 100),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  _navigateToExchangeRatesPage();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF344D77),
+                ),
+                child: const Text('Current Exchange Rates',
+                    style: TextStyle(color: Colors.black)),
               ),
-              child: const Text('Current Exchange Rates',
-                  style: TextStyle(color: Colors.white)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/CurrencyConversionHistory');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/CurrencyConversionHistory');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF344D77),
+                ),
+                child: const Text('View Currency Conversion History',
+                    style: TextStyle(color: Colors.black)),
               ),
-              child: const Text('View Currency Conversion History',
-                  style: TextStyle(color: Colors.white)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/ExchangeRatesHistory');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/ExchangeRatesHistory');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF344D77),
+                ),
+                child: const Text('View Exchange Rate Graph',
+                    style: TextStyle(color: Colors.black)),
               ),
-              child: const Text('View Exchange Rate Graph',
-                  style: TextStyle(color: Colors.white)),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -9,6 +9,15 @@ import 'config.dart';
 import 'dart:async';
 
 class ExchangeRatesHistoryPage extends StatefulWidget {
+  final Map<String, String> _currencySymbols = {
+    'USD': '\$',
+    'GBP': '£',
+    'JPY': '¥',
+    'AUD': 'A\$',
+    'CAD': 'C\$',
+    'MXN': 'MX\$',
+    'EUR': '€',
+  };
   @override
   _ExchangeRatesHistoryPageState createState() =>
       _ExchangeRatesHistoryPageState();
@@ -132,36 +141,36 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
             if (currency == 'USD') {
               return SizedBox(height: 0);
             } else {
-            return Container(
-              margin: EdgeInsets.symmetric(vertical: 20),
-              padding: EdgeInsets.only(top: 16, bottom: 8),
-              decoration: BoxDecoration(
-                color: Color(0xFF344D77),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.black, width: 2),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    '\$1 USD -> $currency',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Colors.white,
+              return Container(
+                margin: EdgeInsets.symmetric(vertical: 20),
+                padding: EdgeInsets.only(top: 16, bottom: 8),
+                decoration: BoxDecoration(
+                  color: Color(0xFF344D77),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.black, width: 2),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'USD to $currency Exchange Rate History',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(
-                    height: 300,
-                    width: double.infinity, // Take full width of the screen
-                    child: CustomPaint(
-                      painter: ScatterPlotPainter(data),
+                    SizedBox(
+                      height: 300,
+                      width: double.infinity, // Take full width of the screen
+                      child: CustomPaint(
+                        painter: ScatterPlotPainter(data, currency),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
+                  ],
+                ),
+              );
             }
           },
         ),
@@ -180,11 +189,40 @@ class ExchangeRateData {
 
 class ScatterPlotPainter extends CustomPainter {
   final List<ExchangeRateData> data;
+  final String currency;
 
-  ScatterPlotPainter(this.data);
+  ScatterPlotPainter(this.data, this.currency);
 
   @override
   void paint(Canvas canvas, Size size) {
+    String currencySymbol = "";
+    switch (currency) {
+      case 'USD':
+        currencySymbol = '\$';
+        break;
+      case 'EUR':
+        currencySymbol = '€';
+        break;
+      case 'GBP':
+        currencySymbol = '£';
+        break;
+      case 'JPY':
+        currencySymbol = '¥';
+        break;
+      case 'AUD':
+        currencySymbol = 'AU\$';
+        break;
+      case 'CAD':
+        currencySymbol = 'CA\$';
+        break;
+      case 'MXN':
+        currencySymbol = 'MX\$';
+        break;
+      default:
+        currencySymbol = '';
+        break;
+    }
+
     const double labelPadding = 30.0;
     const double axisPadding = 50.0;
 
@@ -209,9 +247,11 @@ class ScatterPlotPainter extends CustomPainter {
 
     // Adjust the placement of the graph within the available size
     final double graphWidth = size.width - 80; // Leave space for y-axis labels
-    final double graphHeight = size.height - 60; // Leave space for X-axis labels
+    final double graphHeight =
+        size.height - 60; // Leave space for X-axis labels
 
-    final Offset origin = Offset(40, size.height - 40); // Starting point for axes
+    final Offset origin =
+        Offset(40, size.height - 40); // Starting point for axes
 
     // Draw X and Y axes
     canvas.drawLine(
@@ -225,27 +265,39 @@ class ScatterPlotPainter extends CustomPainter {
       axisPaint,
     );
 
-    final xAxisTitleSpan = TextSpan(style: textStyle, text: 'Date');
-    final xAxisTitleTp = TextPainter(text: xAxisTitleSpan, textDirection: ui.TextDirection.ltr);
+    final xAxisTitleSpan = TextSpan(
+        style: textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 16),
+        text: 'Date');
+    final xAxisTitleTp =
+        TextPainter(text: xAxisTitleSpan, textDirection: ui.TextDirection.ltr);
     xAxisTitleTp.layout();
     canvas.save();
-    canvas.translate(origin.dx + graphWidth / 2 - xAxisTitleTp.width / 2, origin.dy + axisPadding - 20);
+    canvas.translate(origin.dx + graphWidth / 2 - xAxisTitleTp.width / 2,
+        origin.dy + axisPadding - 20);
     xAxisTitleTp.paint(canvas, Offset.zero);
     canvas.restore();
 
-    final yAxisTitleSpan = TextSpan(style: textStyle, text: 'y-axis');
-    final yAxisTitleTp = TextPainter(text: yAxisTitleSpan, textDirection: ui.TextDirection.ltr);
+    final yAxisTitleSpan = TextSpan(
+        style: textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 16),
+        text: '$currency($currencySymbol)');
+    final yAxisTitleTp =
+        TextPainter(text: yAxisTitleSpan, textDirection: ui.TextDirection.ltr);
     yAxisTitleTp.layout();
     canvas.save();
-    canvas.translate(origin.dx + 10, origin.dy - graphHeight / 2 - yAxisTitleTp.height / 2 - 135);
+    canvas.translate(origin.dx + 10,
+        origin.dy - graphHeight / 2 - yAxisTitleTp.height / 2 - 135);
     yAxisTitleTp.paint(canvas, Offset.zero);
     canvas.restore();
 
     if (data.isEmpty) return;
 
     // Calculate min and max timestamps and rates
-    final minTimeStamp = data.map((e) => DateTime.parse(e.date).millisecondsSinceEpoch).reduce(min);
-    final maxTimeStamp = data.map((e) => DateTime.parse(e.date).millisecondsSinceEpoch).reduce(max);
+    final minTimeStamp = data
+        .map((e) => DateTime.parse(e.date).millisecondsSinceEpoch)
+        .reduce(min);
+    final maxTimeStamp = data
+        .map((e) => DateTime.parse(e.date).millisecondsSinceEpoch)
+        .reduce(max);
     final maxRate = data.map((e) => e.rate).reduce(max);
     final minRate = data.map((e) => e.rate).reduce(min);
 
@@ -262,7 +314,10 @@ class ScatterPlotPainter extends CustomPainter {
       } else {
         x = origin.dx + (i / (data.length - 1)) * graphWidth;
       }
-      double y = origin.dy - ((data[i].rate - minRateExtended) / (maxRateExtended - minRateExtended) * graphHeight); // Y position
+      double y = origin.dy -
+          ((data[i].rate - minRateExtended) /
+              (maxRateExtended - minRateExtended) *
+              graphHeight); // Y position
 
       points.add(Offset(x, y));
 
@@ -270,14 +325,18 @@ class ScatterPlotPainter extends CustomPainter {
       canvas.drawCircle(Offset(x, y), 4, paint);
 
       // Draw x-axis date labels
-      if (i % (data.length ~/ 5) == 0) { // label every few dots
-        final dateLabel = DateFormat('MM/dd').format(DateTime.parse(data[i].date));
+      if (i % (data.length ~/ 5) == 0) {
+        // label every few dots
+        final dateLabel =
+            DateFormat('MM/dd').format(DateTime.parse(data[i].date));
         final dateSpan = TextSpan(style: textStyle, text: dateLabel);
-        final dateTp = TextPainter(text: dateSpan, textDirection: ui.TextDirection.ltr);
+        final dateTp =
+            TextPainter(text: dateSpan, textDirection: ui.TextDirection.ltr);
         dateTp.layout();
 
         canvas.save();
-        canvas.translate(x - dateTp.width / 2, origin.dy + 10); // adjust position above x-axis
+        canvas.translate(x - dateTp.width / 2,
+            origin.dy + 10); // adjust position above x-axis
         dateTp.paint(canvas, Offset.zero);
         canvas.restore();
       }
@@ -286,10 +345,14 @@ class ScatterPlotPainter extends CustomPainter {
       if (i == 0 || i == data.length - 1) {
         final rateLabel = data[i].rate.toStringAsFixed(2);
         final rateSpan = TextSpan(style: textStyle, text: rateLabel);
-        final rateTp = TextPainter(text: rateSpan, textDirection: ui.TextDirection.ltr);
+        final rateTp =
+            TextPainter(text: rateSpan, textDirection: ui.TextDirection.ltr);
         rateTp.layout();
 
-        rateTp.paint(canvas, Offset(origin.dx - rateTp.width + 7, y - rateTp.height / 2)); // position near y-axis
+        rateTp.paint(
+            canvas,
+            Offset(origin.dx - rateTp.width + 7,
+                y - rateTp.height / 2)); // position near y-axis
       }
     }
 
