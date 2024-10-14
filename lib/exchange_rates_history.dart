@@ -150,7 +150,7 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(
-                    height: 400, // Increased the height of the graph
+                    height: 300,
                     width: double.infinity, // Take full width of the screen
                     child: CustomPaint(
                       painter: ScatterPlotPainter(data),
@@ -181,11 +181,9 @@ class ScatterPlotPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const double scaleFactor = 1.5;
     const double labelPadding = 30.0;
     const double axisPadding = 50.0;
 
-    // Adjusting the color of the lines to match the dots and setting bold lines
     final paint = Paint()
       ..color = Colors.blue
       ..strokeWidth = 5
@@ -193,7 +191,7 @@ class ScatterPlotPainter extends CustomPainter {
 
     final linePaint = Paint()
       ..color = Colors.blue
-      ..strokeWidth = 3.0 // Slightly thicker than default but not too thick
+      ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke;
 
     final axisPaint = Paint()
@@ -206,38 +204,28 @@ class ScatterPlotPainter extends CustomPainter {
     );
 
     // Adjust the placement of the graph within the available size
-    final double graphWidth =
-        size.width - 80; // Leave extra room for y-axis labels
-    final double graphHeight =
-        size.height - 60; // Leave 10px space for X axis labels
+    final double graphWidth = size.width - 80; // Leave space for y-axis labels
+    final double graphHeight = size.height - 60; // Leave space for X-axis labels
 
-    // Shift the y-axis more towards the right to leave space for y-axis labels
-    final Offset origin =
-        Offset(30, size.height - 50); // Offset for x and y axis start
+    final Offset origin = Offset(40, size.height - 40); // Starting point for axes
 
-    // Draw X and Y axes with appropriate spacing
+    // Draw X and Y axes
     canvas.drawLine(
       Offset(origin.dx, origin.dy),
-      Offset(origin.dx + graphWidth, origin.dy), // X-axis from left to right
+      Offset(origin.dx + graphWidth, origin.dy), // X-axis
       axisPaint,
     );
     canvas.drawLine(
       Offset(origin.dx, origin.dy),
-      Offset(origin.dx, origin.dy - graphHeight), // Y-axis from bottom to top
+      Offset(origin.dx, origin.dy - graphHeight), // Y-axis
       axisPaint,
     );
 
-    if (data.isEmpty) {
-      return;
-    }
+    if (data.isEmpty) return;
 
     // Calculate min and max timestamps and rates
-    final minTimeStamp = data
-        .map((e) => DateTime.parse(e.date).millisecondsSinceEpoch)
-        .reduce(min);
-    final maxTimeStamp = data
-        .map((e) => DateTime.parse(e.date).millisecondsSinceEpoch)
-        .reduce(max);
+    final minTimeStamp = data.map((e) => DateTime.parse(e.date).millisecondsSinceEpoch).reduce(min);
+    final maxTimeStamp = data.map((e) => DateTime.parse(e.date).millisecondsSinceEpoch).reduce(max);
     final maxRate = data.map((e) => e.rate).reduce(max);
     final minRate = data.map((e) => e.rate).reduce(min);
 
@@ -246,45 +234,41 @@ class ScatterPlotPainter extends CustomPainter {
 
     List<Offset> points = [];
 
-    // Calculate the interval for x-axis labels to avoid overcrowding
-    int xLabelInterval =
-        (data.length / 5).ceil(); // Display roughly 5 date labels
-    double lastXLabelPosition = -double.infinity;
-    double lastYLabelPosition = -double.infinity;
+    // Draw points and connect them with lines
+    for (int i = 0; i < data.length; i++) {
+      double x = origin.dx + (i / (data.length - 1)) * graphWidth; // X position
+      double y = origin.dy - ((data[i].rate - minRateExtended) / (maxRateExtended - minRateExtended) * graphHeight); // Y position
 
-for (int i = 0; i < data.length; i++) {
-  double x = origin.dx + (i / (data.length - 1)) * graphWidth;
-  double y = origin.dy - ((data[i].rate - minRateExtended) / (maxRateExtended - minRateExtended) * (graphHeight * 2));
+      points.add(Offset(x, y));
 
-  points.add(Offset(x, y));
+      // Draw the dot
+      canvas.drawCircle(Offset(x, y), 4, paint);
 
-  // Draw the dot
-  canvas.drawCircle(Offset(x, y), 4, paint);
+      // Draw x-axis date labels
+      if (i % (data.length ~/ 5) == 0) { // label every few dots
+        final dateLabel = DateFormat('MM/dd').format(DateTime.parse(data[i].date));
+        final dateSpan = TextSpan(style: textStyle, text: dateLabel);
+        final dateTp = TextPainter(text: dateSpan, textDirection: ui.TextDirection.ltr);
+        dateTp.layout();
 
-  // Draw x-axis date labels
-  if (i % 1 == 0) { // label every single dot
-    final dateLabel = DateFormat('MM/dd').format(DateTime.parse(data[i].date));
-    final dateSpan = TextSpan(style: textStyle, text: dateLabel);
-    final dateTp = TextPainter(text: dateSpan, textDirection: ui.TextDirection.ltr);
-    dateTp.layout();
+        canvas.save();
+        canvas.translate(x - dateTp.width / 2, origin.dy + 10); // adjust position above x-axis
+        dateTp.paint(canvas, Offset.zero);
+        canvas.restore();
+      }
 
-    canvas.save();
-    canvas.translate(x - dateTp.width / 2, origin.dy + 25); // adjust position above x-axis
-    canvas.rotate(-pi / 4);
-    dateTp.paint(canvas, Offset.zero);
-    canvas.restore();
-  }
+      // Draw y-axis rate labels
+      if (i == 0 || i == data.length - 1) {
+        final rateLabel = data[i].rate.toStringAsFixed(2);
+        final rateSpan = TextSpan(style: textStyle, text: rateLabel);
+        final rateTp = TextPainter(text: rateSpan, textDirection: ui.TextDirection.ltr);
+        rateTp.layout();
 
-  // Draw y-axis rate labels
-  final rateLabel = data[i].rate.toStringAsFixed(2);
-  final rateSpan = TextSpan(style: textStyle, text: rateLabel);
-  final rateTp = TextPainter(text: rateSpan, textDirection: ui.TextDirection.ltr);
-  rateTp.layout();
+        rateTp.paint(canvas, Offset(origin.dx - rateTp.width - 5, y - rateTp.height / 2)); // position near y-axis
+      }
+    }
 
-  rateTp.paint(canvas, Offset(origin.dx - rateTp.width - 15, y - rateTp.height / 2)); // position near y-axis
-}
-
-    // Connect the points with lines of the same color as the dots
+    // Connect the points with lines
     for (int i = 0; i < points.length - 1; i++) {
       canvas.drawLine(points[i], points[i + 1], linePaint);
     }
