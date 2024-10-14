@@ -129,6 +129,9 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
             final currency = _dataMap.keys.elementAt(index);
             final data = _dataMap[currency]!;
 
+            if (currency == 'USD') {
+              return SizedBox(height: 0);
+            } else {
             return Container(
               margin: EdgeInsets.symmetric(vertical: 20),
               padding: EdgeInsets.only(top: 16, bottom: 8),
@@ -159,6 +162,7 @@ class _ExchangeRatesHistoryPageState extends State<ExchangeRatesHistoryPage> {
                 ],
               ),
             );
+            }
           },
         ),
       ),
@@ -211,15 +215,31 @@ class ScatterPlotPainter extends CustomPainter {
 
     // Draw X and Y axes
     canvas.drawLine(
-      Offset(origin.dx, origin.dy),
-      Offset(origin.dx + graphWidth, origin.dy), // X-axis
+      Offset(origin.dx + 20, origin.dy),
+      Offset(origin.dx + 20 + graphWidth, origin.dy), // X-axis
       axisPaint,
     );
     canvas.drawLine(
-      Offset(origin.dx, origin.dy),
-      Offset(origin.dx, origin.dy - graphHeight), // Y-axis
+      Offset(origin.dx + 20, origin.dy),
+      Offset(origin.dx + 20, origin.dy - graphHeight), // Y-axis
       axisPaint,
     );
+
+    final xAxisTitleSpan = TextSpan(style: textStyle, text: 'Date');
+    final xAxisTitleTp = TextPainter(text: xAxisTitleSpan, textDirection: ui.TextDirection.ltr);
+    xAxisTitleTp.layout();
+    canvas.save();
+    canvas.translate(origin.dx + graphWidth / 2 - xAxisTitleTp.width / 2, origin.dy + axisPadding - 20);
+    xAxisTitleTp.paint(canvas, Offset.zero);
+    canvas.restore();
+
+    final yAxisTitleSpan = TextSpan(style: textStyle, text: 'y-axis');
+    final yAxisTitleTp = TextPainter(text: yAxisTitleSpan, textDirection: ui.TextDirection.ltr);
+    yAxisTitleTp.layout();
+    canvas.save();
+    canvas.translate(origin.dx + 10, origin.dy - graphHeight / 2 - yAxisTitleTp.height / 2 - 135);
+    yAxisTitleTp.paint(canvas, Offset.zero);
+    canvas.restore();
 
     if (data.isEmpty) return;
 
@@ -236,7 +256,12 @@ class ScatterPlotPainter extends CustomPainter {
 
     // Draw points and connect them with lines
     for (int i = 0; i < data.length; i++) {
-      double x = origin.dx + (i / (data.length - 1)) * graphWidth; // X position
+      double x;
+      if (i == 0) {
+        x = origin.dx + 20 + (i / (data.length - 1)) * graphWidth;
+      } else {
+        x = origin.dx + (i / (data.length - 1)) * graphWidth;
+      }
       double y = origin.dy - ((data[i].rate - minRateExtended) / (maxRateExtended - minRateExtended) * graphHeight); // Y position
 
       points.add(Offset(x, y));
@@ -264,7 +289,7 @@ class ScatterPlotPainter extends CustomPainter {
         final rateTp = TextPainter(text: rateSpan, textDirection: ui.TextDirection.ltr);
         rateTp.layout();
 
-        rateTp.paint(canvas, Offset(origin.dx - rateTp.width - 5, y - rateTp.height / 2)); // position near y-axis
+        rateTp.paint(canvas, Offset(origin.dx - rateTp.width + 7, y - rateTp.height / 2)); // position near y-axis
       }
     }
 
