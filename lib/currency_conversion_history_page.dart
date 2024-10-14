@@ -66,6 +66,14 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
         ),
       ],
     ),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        double maxHeight = constraints.maxHeight - 60;
+        double tableHeight = conversions.length * 56.0;
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: Container(
+        height: tableHeight > maxHeight ? maxHeight : tableHeight,
     child: DataTable(
       headingRowHeight: 56.0,
       headingTextStyle: const TextStyle(
@@ -124,8 +132,13 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
         ]);
       }).toList(),
     ),
+    ),
+    );
+      },
+    ),
   );
 }
+
 
   Widget _buildFooterBar(User? user, List<Conversion> conversions) {
     return Container(
@@ -195,21 +208,38 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
                   child: Text('No conversion history available'));
             }
 
-            return Column(
+            return Stack(
               children: [
-                    Container(
-                      margin: const EdgeInsets.all(16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF344D77),
-                        borderRadius: BorderRadius.circular(16),
-                    ),
+                Center(
                     child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: _buildConversionHistoryTable(snapshot.data!),
+                      child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                          Container(
+                            margin: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF344D77),
+                              borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: SingleChildScrollView(
+                             scrollDirection: Axis.vertical,
+                              child: _buildConversionHistoryTable(snapshot.data!),
+                          ),
+                          ),
+                      ],
+                    ),
                     ),
                 ),
-                _buildFooterBar(_auth.currentUser, snapshot.data!),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: _buildFooterBar(_auth.currentUser, snapshot.data!)
+                    ),
+                ),
               ],
             );
           },
@@ -237,21 +267,26 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
           backgroundColor: Color.fromARGB(255, 147, 143, 143),
           title: const Text('Currency Conversion History'),
         ),
-        body: Column(
+        body: Stack(
           children: [
-              Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF344D77),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: StreamBuilder<QuerySnapshot>(
+              Center(
+              child: SingleChildScrollView(
+                child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                    Container(
+                      margin: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF344D77),
+                        borderRadius: BorderRadius.circular(16),
+                    ),
+                                    child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('conversions')
                       .where('userEmail', isEqualTo: user?.email)
                       .snapshots(),
-                  builder: (context, snapshot) {
+                      builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
@@ -261,7 +296,7 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
                               'No conversions found for ${user?.email}.',
                               style: const TextStyle(color: Colors.white)));
                     }
-
+          
                     final conversions = snapshot.data!.docs.map((doc) {
                       final data = doc.data() as Map<String, dynamic>;
                       return Conversion.fromMap(data);
@@ -343,7 +378,7 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
                                   child: MouseRegion(
                                     cursor: SystemMouseCursors.click,
                                     child: const Icon(Icons.close, color: Colors.red),
-                                  )
+                                  ),
                                 ),
                               ),
                             ]);
@@ -354,7 +389,19 @@ Widget _buildConversionHistoryTable(List<Conversion> conversions) {
                   },
                 ),
               ),
-            _buildFooterBar(user, []),
+                ],
+              ),
+              ),
+              ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Align(
+                alignment: Alignment.center,
+                child: _buildFooterBar(user, []),
+            ),
+            ),
           ],
         ),
       );
