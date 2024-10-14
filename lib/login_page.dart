@@ -19,13 +19,14 @@ class _LoginPageState extends State<LoginPage> {
   void _login() async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const CurrencyConverterHomePage()),
+        MaterialPageRoute(
+            builder: (context) => const CurrencyConverterHomePage()),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -39,6 +40,40 @@ class _LoginPageState extends State<LoginPage> {
     NavigatorState _navigator = Navigator.of(context);
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 147, 143, 143),
+      appBar: AppBar(
+        toolbarHeight: 100,
+        backgroundColor: Color.fromARGB(255, 100, 100, 100),
+        centerTitle: true,
+        shape:
+            Border.all(color: const Color.fromARGB(255, 58, 58, 58), width: 5),
+        title: Container(
+          decoration: BoxDecoration(
+            color: Color.fromARGB(255, 100, 100, 100),
+          ),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "QuickCurrency",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              Text(
+                "Quick and Easy Exchange Rates",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: Center(
         child: Column(
           children: [
@@ -52,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                 children: [
+                children: [
                   const Text(
                     "Login to QuickCurrency",
                     style: TextStyle(
@@ -66,15 +101,15 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
-                      labelStyle: const TextStyle(color: Colors.black), 
+                      labelStyle: const TextStyle(color: Colors.black),
                       filled: true,
-                      fillColor: Colors.white24, 
+                      fillColor: Colors.white24,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: const BorderSide(color: Colors.black),
                       ),
                     ),
-                    style: const TextStyle(color: Colors.black), 
+                    style: const TextStyle(color: Colors.black),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -82,22 +117,24 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      labelStyle: const TextStyle(color: Colors.black), 
+                      labelStyle: const TextStyle(color: Colors.black),
                       filled: true,
-                      fillColor: Colors.white24, 
+                      fillColor: Colors.white24,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: const BorderSide(color: Colors.black),
                       ),
                     ),
-                    style: const TextStyle(color: Colors.black), 
+                    style: const TextStyle(color: Colors.black),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: const Color.fromARGB(255, 255, 255, 255), backgroundColor: const Color.fromARGB(255, 0, 0, 0), 
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -108,13 +145,16 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     onPressed: () {
                       _navigator.push(
-                        MaterialPageRoute(builder: (context) => const CurrencyConverterHomePage(isGuest: true)),
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const CurrencyConverterHomePage(isGuest: true)),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: const Color.fromARGB(255, 255, 255, 255),
                       backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -125,18 +165,19 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const RegisterPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const RegisterPage()),
                       );
                     },
                     child: const Text(
                       "Don't have an account? Register here.",
-                      style: TextStyle(color: Colors.black), 
+                      style: TextStyle(color: Colors.black),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 100), 
+            const SizedBox(height: 100),
           ],
         ),
       ),

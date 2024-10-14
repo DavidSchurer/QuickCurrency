@@ -17,15 +17,19 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _register() async {
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-        await FirebaseFirestore.instance.collection('users').doc(userCredential.user?.uid).set({
-          'email': _emailController.text,
-        });
-        
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user?.uid)
+          .set({
+        'email': _emailController.text,
+      });
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -41,6 +45,40 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 147, 143, 143),
+      appBar: AppBar(
+        toolbarHeight: 100,
+        backgroundColor: Color.fromARGB(255, 100, 100, 100),
+        centerTitle: true,
+        shape:
+            Border.all(color: const Color.fromARGB(255, 58, 58, 58), width: 5),
+        title: Container(
+          decoration: BoxDecoration(
+            color: Color.fromARGB(255, 100, 100, 100),
+          ),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "QuickCurrency",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              Text(
+                "Quick and Easy Exchange Rates",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: Center(
         child: Column(
           children: [
@@ -98,8 +136,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   ElevatedButton(
                     onPressed: _register,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: const Color.fromARGB(255, 255, 255, 255), backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -110,7 +150,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()),
                       );
                     },
                     child: const Text(

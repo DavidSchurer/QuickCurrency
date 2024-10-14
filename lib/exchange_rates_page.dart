@@ -78,11 +78,43 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 147, 143, 143),
-      appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 147, 143, 143),
-        title: Text('Exchange Rates (${widget.selectedCurrency})'),
-      ),
-      body: Center(
+              appBar: AppBar(
+          toolbarHeight: 100,
+        backgroundColor: Color.fromARGB(255, 100, 100, 100),
+        centerTitle: true,
+        shape:
+            Border.all(color: const Color.fromARGB(255, 58, 58, 58), width: 5),
+        title: Container(
+          decoration: BoxDecoration(
+            color: Color.fromARGB(255, 100, 100, 100),
+          ),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "QuickCurrency",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              Text(
+                "Quick and Easy Exchange Rates",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ),
+      body: Padding(
+        padding: const EdgeInsets.only(top: 16.0),
+      child: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 600),
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -156,6 +188,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
                   },
                 ),
         ),
+      ),
       ),
     );
   }

@@ -143,17 +143,17 @@ class _CurrencyConversionHistoryPageState
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        color: Color.fromARGB(255, 147, 143, 143),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
+        color: Color.fromARGB(255, 100, 100, 100),
+        border: Border.all(
+          color: const Color.fromARGB(255, 58, 58, 58),
+          width: 5,
         ),
       ),
       child: Center(
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.black,
+            foregroundColor: Colors.black,
+            backgroundColor: const Color(0xFF344D77),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -194,7 +194,38 @@ class _CurrencyConversionHistoryPageState
     if (widget.isGuest) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Currency Conversion History'),
+          toolbarHeight: 100,
+          backgroundColor: Color.fromARGB(255, 100, 100, 100),
+          centerTitle: true,
+          shape: Border.all(
+              color: const Color.fromARGB(255, 58, 58, 58), width: 5),
+          title: Container(
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 100, 100, 100),
+            ),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "QuickCurrency",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                Text(
+                  "Quick and Easy Exchange Rates",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         body: FutureBuilder<List<Conversion>>(
           future: _loadConversionHistoryFromLocalStorage(),
@@ -251,7 +282,38 @@ class _CurrencyConversionHistoryPageState
         if (!widget.isGuest) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Currency Conversion History'),
+              toolbarHeight: 100,
+              backgroundColor: Color.fromARGB(255, 100, 100, 100),
+              centerTitle: true,
+              shape: Border.all(
+                  color: const Color.fromARGB(255, 58, 58, 58), width: 5),
+              title: Container(
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 100, 100, 100),
+                ),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "QuickCurrency",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    Text(
+                      "Quick and Easy Exchange Rates",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             body: const Center(
               child: Text('No conversion history available'),
@@ -263,8 +325,38 @@ class _CurrencyConversionHistoryPageState
       return Scaffold(
         backgroundColor: Color.fromARGB(255, 147, 143, 143),
         appBar: AppBar(
-          backgroundColor: Color.fromARGB(255, 147, 143, 143),
-          title: const Text('Currency Conversion History'),
+          toolbarHeight: 100,
+          backgroundColor: Color.fromARGB(255, 100, 100, 100),
+          centerTitle: true,
+          shape: Border.all(
+              color: const Color.fromARGB(255, 58, 58, 58), width: 5),
+          title: Container(
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 100, 100, 100),
+            ),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "QuickCurrency",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                Text(
+                  "Quick and Easy Exchange Rates",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         body: Stack(
           children: [
