@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ExchangeRatesPage extends StatefulWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final String selectedCurrency;
-  
+
   ExchangeRatesPage({super.key, required this.selectedCurrency});
 
   @override
@@ -17,7 +17,15 @@ class ExchangeRatesPage extends StatefulWidget {
 
 class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   final Map<String, double> currentRates = {};
-  final List<String> currencies = ['USD','GBP', 'JPY', 'AUD', 'CAD', 'MXN', 'EUR'];
+  final List<String> currencies = [
+    'USD',
+    'GBP',
+    'JPY',
+    'AUD',
+    'CAD',
+    'MXN',
+    'EUR'
+  ];
   final Map<String, String> currencySymbols = {
     'USD': '\$',
     'GBP': '£',
@@ -58,7 +66,7 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
 
         setState(() {
           for (var currency in currencies) {
-              currentRates[currency] = rates[currency];
+            currentRates[currency] = rates[currency];
           }
         });
       } else {
@@ -78,8 +86,8 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 147, 143, 143),
-              appBar: AppBar(
-          toolbarHeight: 100,
+      appBar: AppBar(
+        toolbarHeight: 100,
         backgroundColor: Color.fromARGB(255, 100, 100, 100),
         centerTitle: true,
         shape:
@@ -111,84 +119,112 @@ class _ExchangeRatesPageState extends State<ExchangeRatesPage> {
             ],
           ),
         ),
-        ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 16.0),
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 600),
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 2 / 1,
+      ),
+      body: Column(
+        children: [
+          Container(
+            height: 50,
+            decoration: BoxDecoration(
+                color: const Color(0xFF344D77),
+                border: Border.all(color: Color(0xFF657898), width: 5)),
+            child: Center(
+              child: Text(
+                "Current Exchange Rates for ${widget.selectedCurrency}",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
-                itemCount: currencies.length - 1,
-                itemBuilder: (context, index) {
-                  final currency = currencies.where((c) => c != widget.selectedCurrency).toList()[index];
-                  final currentRate = (currentRates[currency] ?? 0.0);
-                  final symbol = currencySymbols[currency] ?? '';
+              ),
+            ),
+          ),
+          SizedBox(height: 16),
+          Expanded(
+            child: Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 600),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 2 / 1,
+                        ),
+                        itemCount: currencies.length - 1,
+                        itemBuilder: (context, index) {
+                          final currency = currencies
+                              .where((c) => c != widget.selectedCurrency)
+                              .toList()[index];
+                          final currentRate = (currentRates[currency] ?? 0.0);
+                          final symbol = currencySymbols[currency] ?? '';
 
-                  return Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF344D77),
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          spreadRadius: 3,
-                          blurRadius: 7,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: const BoxDecoration(
-                            color: Colors.black,
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            symbol,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                          return Container(
+                            padding: const EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF344D77),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Color(0xFF657898),
+                                width: 5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  spreadRadius: 3,
+                                  blurRadius: 7,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '1 ${widget.selectedCurrency} = ${currentRate.toStringAsFixed(2)} $currency',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    symbol,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        '1 ${widget.selectedCurrency} = ${currentRate.toStringAsFixed(2)} $currency',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-        ),
-      ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
