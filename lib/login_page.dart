@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 import 'register_page.dart';
 
@@ -28,6 +29,25 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(
             builder: (context) => const CurrencyConverterHomePage()),
       );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+  }
+
+  void _loginAsGuest() async {
+    try {
+      UserCredential userCredential = await _auth.signInAnonymously();
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isGuest', true);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const CurrencyConverterHomePage(isGuest: true)),
+        );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
@@ -142,25 +162,20 @@ class _LoginPageState extends State<LoginPage> {
                     child: const Text('Login'),
                   ),
                   const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      _navigator.push(
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const CurrencyConverterHomePage(isGuest: true)),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: const Color.fromARGB(255, 255, 255, 255),
-                      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text('Continue as Guest'),
-                  ),
+                  // TO-DO: Fix the Guest functionality and firebase security issues regarding authentication
+
+                  //   onPressed: _loginAsGuest,
+                  //   style: ElevatedButton.styleFrom(
+                  //     foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                  //     backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                  //     padding: const EdgeInsets.symmetric(
+                  //         horizontal: 32, vertical: 16),
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(10),
+                  //     ),
+                  //   ),
+                  //   child: const Text('Continue as Guest'),
+                  // ),
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacement(

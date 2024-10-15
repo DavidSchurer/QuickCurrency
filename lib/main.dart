@@ -45,6 +45,7 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(
               builder: (context) => const CurrencyConverterHomePage());
         } else if (settings.name == '/ExchangeRatesHistory') {
+          final args = settings.arguments as String?;
           return MaterialPageRoute(
               builder: (context) => ExchangeRatesHistoryPage());
         }
@@ -156,7 +157,7 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
 
   Future<void> _saveConversionHistoryToFirestore(Conversion conversion) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
+    if (user != null && !user.isAnonymous) {
       final userEmail = user.email;
       await FirebaseFirestore.instance.collection('conversions').add({
         'selectedCurrency': selectedCurrency,
@@ -167,6 +168,13 @@ class _CurrencyConverterHomePageState extends State<CurrencyConverterHomePage> {
         'conversionRate': conversion.conversionRate,
         'date': conversion.date,
       });
+    } else {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      List<String> history = prefs.getStringList('conversionHistory') ?? [];
+      String timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      String entry = '$selectedCurrency|$inputAmount|$_selectedCurrencyCode|${_selectedCurrencyConversion?.toStringAsFixed(2)}|$timestamp';
+      history.add(entry);
+      await prefs.setStringList('conversionHistory', history);
     }
   }
 
