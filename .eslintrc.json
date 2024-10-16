@@ -1,0 +1,9 @@
+{
+    "root": true,
+    "extends": [],
+    "rules": {
+      "no-unused-vars": "off",
+      "max-len": "off",
+      "indent": "off"
+    }
+  }

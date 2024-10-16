@@ -1,1 +1,49 @@
-{"hosting":{"public":"build/web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"database":{"rules":"database.rules.json"},"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"currencyconverter-28b45","configurations":{"web":"1:604574391010:web:065db8cd0d56e64e529cbb","windows":"1:604574391010:web:92183566caddb919529cbb"}}}}}}
+{
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "currencyconverter-28b45",
+          "configurations": {
+            "web": "1:604574391010:web:065db8cd0d56e64e529cbb",
+            "windows": "1:604574391010:web:92183566caddb919529cbb"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ]
+}
