@@ -11,8 +11,10 @@ Future<void> main() async {
 
   FirebaseFirestore.instance.settings = Settings(persistenceEnabled: false);
 
-  const String url =
-      'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey&currencies=USD,GBP,JPY,AUD,CAD,MXN,EUR';
+  final String freeCurrencyAPIKey = Platform.environment['FREECURRENCYAPI_KEY'] ?? '';
+
+  final String url =
+      'https://api.freecurrencyapi.com/v1/latest?apikey=$freeCurrencyAPIKey&currencies=USD,GBP,JPY,AUD,CAD,MXN,EUR';
   
     try {
       final response = await http.get(Uri.parse(url));
