@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
 import 'config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 Future<void> main() async {
-  await FirebaseFirestore.instance.settings = Settings(persistenceEnabled: false);
+  await Firebase.initializeApp();
+
+  FirebaseFirestore.instance.settings = Settings(persistenceEnabled: false);
 
   const String url =
       'https://api.freecurrencyapi.com/v1/latest?apikey=$apiKey&currencies=USD,GBP,JPY,AUD,CAD,MXN,EUR';
