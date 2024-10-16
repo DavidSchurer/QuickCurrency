@@ -13,16 +13,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Dart
-        uses: dart-lang/setup-dart@v1
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          flutter-version: 'latest' # Specify a version if needed
 
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: Run fetch exchange rates script
-        run: dart run lib/fetch_exchange_rates.dart
+        run: flutter run lib/fetch_exchange_rates.dart
         env:
           FREECURRENCYAPI_KEY: ${{ secrets.FREECURRENCYAPI_KEY }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
