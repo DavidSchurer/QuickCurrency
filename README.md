@@ -13,7 +13,7 @@ QuickCurrency is a currency converter web application designed to provide users 
   
 - <strong>Currency Conversion History Management:</strong> Provides functionality for the user to view past conversions, delete single entries in their currency conversion history, or clear their currency conversion history by deleting all entries.
   
-- <strong>Exchange Rate History Visualization:</strong> Displays historical exchange rate data between USD and other currencies (GBP, JPY, AUD, CAD, MXN, EUR) using a custom scatter plot graph, with data fetched from FreeCurrencyAPI and stoerd in Firebase. The graphs dynamically update to display the latest exchange rate data.
+- <strong>Exchange Rate History Visualization:</strong> Displays historical exchange rate data between USD and other currencies (GBP, JPY, AUD, CAD, MXN, EUR) using a custom scatter plot graph, with data fetched from FreeCurrencyAPI and stored in Firebase. The graphs dynamically update to display the latest exchange rate data.
 
 - <strong>Firebase Authentication:</strong> Implemented with Firebase Authentication in order to ensure secure login, and enabling users to quickly sign up using an email and password.
 
